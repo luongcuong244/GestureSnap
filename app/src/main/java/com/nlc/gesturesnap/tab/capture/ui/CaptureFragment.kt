@@ -1,14 +1,15 @@
 package com.nlc.gesturesnap.tab.capture.ui
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.databinding.FragmentCaptureBinding
 import com.nlc.gesturesnap.tab.capture.view_model.CaptureViewModel
+
 
 class CaptureFragment : Fragment() {
 
@@ -21,16 +22,19 @@ class CaptureFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        
+
+        childFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, CameraFragment())
+            .commit()
+
         val captureViewModel =
             ViewModelProvider(this).get(CaptureViewModel::class.java)
 
         _binding = FragmentCaptureBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textCapture
         captureViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+
         }
         return root
     }
