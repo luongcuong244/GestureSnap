@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Gesture Snap</string>
+    <string name="title_capture">Capture</string>
+    <string name="title_gallery">Gallery</string>
+    <string name="title_guide">Guide</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
