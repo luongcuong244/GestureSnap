@@ -14,7 +14,7 @@
         android:theme="@style/Theme.GestureSnap.NoActionBar"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".screen.permission.CameraPermissionActivity"
             android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
@@ -23,6 +23,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".screen.capture.ui.CaptureActivity"
+            android:exported="false"
+            />
     </application>
 
 </manifest>

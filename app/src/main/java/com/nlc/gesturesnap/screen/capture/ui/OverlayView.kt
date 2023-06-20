@@ -1,4 +1,4 @@
-package com.nlc.gesturesnap.tab.capture.ui
+package com.nlc.gesturesnap.screen.capture.ui
 
 import android.content.Context
 import android.graphics.Canvas

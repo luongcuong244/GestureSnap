@@ -15,7 +15,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"/>
 
-    <com.nlc.gesturesnap.tab.capture.ui.OverlayView
+    <com.nlc.gesturesnap.screen.capture.ui.OverlayView
         android:id="@+id/overlay"
         android:layout_width="0dp"
         android:layout_height="0dp"

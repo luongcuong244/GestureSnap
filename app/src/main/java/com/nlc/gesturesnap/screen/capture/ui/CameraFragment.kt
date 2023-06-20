@@ -1,6 +1,7 @@
-package com.nlc.gesturesnap.tab.capture.ui
+package com.nlc.gesturesnap.screen.capture.ui
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
@@ -12,15 +13,14 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.navigation.Navigation
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.nlc.gesturesnap.databinding.FragmentCameraBinding
-import com.nlc.gesturesnap.tab.capture.helper.GestureRecognizerHelper
+import com.nlc.gesturesnap.helper.GestureRecognizerHelper
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.screen.permission.CameraPermissionActivity
 
 class CameraFragment : Fragment(),
     GestureRecognizerHelper.GestureRecognizerListener {
@@ -49,10 +49,9 @@ class CameraFragment : Fragment(),
         // Make sure that all permissions are still present, since the
         // user could have removed them while the app was in paused state.
 
-        if (!PermissionsFragment.hasPermissions(requireContext())) {
-            Navigation.findNavController(
-                requireActivity(), R.id.nav_host_fragment_activity_main
-            ).navigate(R.id.action_camera_to_permissions)
+        if (!CameraPermissionActivity.hasPermissions(requireContext())) {
+            val intent = Intent(requireContext(), CameraPermissionActivity::class.java)
+            startActivity(intent)
         }
 
         // Start the GestureRecognizerHelper again when users come back
@@ -121,7 +120,6 @@ class CameraFragment : Fragment(),
                 gestureRecognizerListener = this
             )
         }
-
     }
 
     // Initialize CameraX, and prepare to bind the camera use cases
@@ -151,13 +149,13 @@ class CameraFragment : Fragment(),
             CameraSelector.Builder().requireLensFacing(cameraFacing).build()
 
         // Preview. Only using the 4:3 ratio because this is the closest to our models
-        preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
+        preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_16_9)
             .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
             .build()
 
         // ImageAnalysis. Using RGBA 8888 to match how our models work
         imageAnalyzer =
-            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_16_9)
                 .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
