@@ -3,6 +3,13 @@
     <string name="title_capture">Capture</string>
     <string name="title_gallery">Gallery</string>
     <string name="title_guide">Guide</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="all_text">All</string>
+    <string name="none_text">None</string>
+    <string name="closed_fist_text">Closed fist</string>
+    <string name="open_palm_text">Open palm</string>
+    <string name="pointing_up_text">Pointing up</string>
+    <string name="thumb_up_text">Thumb up</string>
+    <string name="thumb_down_text">Thumb down</string>
+    <string name="victory_text">Victory</string>
+    <string name="love_text">Love</string>
 </resources>
