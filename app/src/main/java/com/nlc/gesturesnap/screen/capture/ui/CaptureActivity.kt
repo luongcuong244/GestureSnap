@@ -1,7 +1,9 @@
 package com.nlc.gesturesnap.screen.capture.ui
 
 import android.os.Bundle
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.AspectRatio
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nlc.gesturesnap.R
@@ -9,6 +11,7 @@ import com.nlc.gesturesnap.databinding.ActivityCaptureBinding
 import com.nlc.gesturesnap.screen.capture.ui.component.GestureDetectAdapter
 import com.nlc.gesturesnap.screen.capture.ui.listener.ItemClickListener
 import com.nlc.gesturesnap.screen.capture.ui.view.CameraFragment
+import com.nlc.gesturesnap.screen.capture.view_model.CameraAspectRatioViewModel
 import com.nlc.gesturesnap.screen.capture.view_model.GestureDetectViewModel
 
 
@@ -30,16 +33,7 @@ class CaptureActivity : AppCompatActivity() {
             .commit()
 
         setUpGestureDetectViewModel()
-
-//        val width = resources.displayMetrics.widthPixels
-//
-//        // Đặt kích thước cho view
-//        // Ví dụ: 1:1, 16:9, hoặc 4:3
-//
-//        // int height = width * 9 / 16; // 16:9
-//        // int height = width * 3 / 4; // 4:3
-//        val layoutParams = FrameLayout.LayoutParams(width, width * 4 / 3)
-//        binding.fragmentContainer.layoutParams = layoutParams
+        setUpCameraResolutionViewModel()
     }
 
     private fun setUpGestureDetectViewModel() {
@@ -68,6 +62,32 @@ class CaptureActivity : AppCompatActivity() {
         }
 
         gestureDetectViewModel.setCurrentHandGesture(0)
+    }
+
+    private fun setUpCameraResolutionViewModel() {
+
+        val deviceWidth = resources.displayMetrics.widthPixels
+
+        val cameraAspectRatioViewModel =
+            ViewModelProvider(this)[CameraAspectRatioViewModel::class.java]
+
+        cameraAspectRatioViewModel.cameraAspectRatio.observe(this) {
+
+            var layoutParams : FrameLayout.LayoutParams? = null
+
+            when(it){
+                AspectRatio.RATIO_4_3 -> {
+                    layoutParams = FrameLayout.LayoutParams(deviceWidth, deviceWidth * 4 / 3)
+                }
+                AspectRatio.RATIO_16_9 -> {
+                    layoutParams = FrameLayout.LayoutParams(deviceWidth, deviceWidth * 16 / 9)
+                }
+            }
+
+            if(layoutParams != null){
+                binding.fragmentContainer.layoutParams = layoutParams
+            }
+        }
     }
 
     override fun onDestroy() {

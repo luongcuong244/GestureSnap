@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayout
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.screen.capture.model.GestureDetectOption
-import com.nlc.gesturesnap.screen.capture.ui.enums.GestureRecyclerViewItemColor
+import com.nlc.gesturesnap.screen.capture.ui.value.GestureRecyclerViewItemColor
 import com.nlc.gesturesnap.screen.capture.ui.listener.ItemClickListener
 
 

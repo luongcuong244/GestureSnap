@@ -1,10 +1,9 @@
 package com.nlc.gesturesnap.screen.capture.model
 
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import androidx.core.graphics.drawable.DrawableCompat
-import com.nlc.gesturesnap.screen.capture.ui.enums.GestureCategory
-import com.nlc.gesturesnap.screen.capture.ui.enums.GestureRecyclerViewItemColor
+import com.nlc.gesturesnap.screen.capture.ui.value.GestureCategory
+import com.nlc.gesturesnap.screen.capture.ui.value.GestureRecyclerViewItemColor
 
 class GestureDetectOption (
     val inactiveIcon: Drawable,

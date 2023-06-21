@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.screen.capture.model.GestureDetectOption
-import com.nlc.gesturesnap.screen.capture.ui.enums.GestureCategory
+import com.nlc.gesturesnap.screen.capture.ui.value.GestureCategory
 
 class GestureDetectViewModel : ViewModel() {
 

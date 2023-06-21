@@ -1,4 +1,4 @@
-package com.nlc.gesturesnap.screen.capture.ui.enums
+package com.nlc.gesturesnap.screen.capture.ui.value
 
 enum class GestureCategory(private var stringValue: String) {
     ALl("All"),
