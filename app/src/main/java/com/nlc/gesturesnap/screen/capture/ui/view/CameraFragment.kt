@@ -1,29 +1,56 @@
 package com.nlc.gesturesnap.screen.capture.ui.view
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.BitmapFactory
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.databinding.FragmentCameraBinding
+import com.nlc.gesturesnap.helper.MediaHelper
 import com.nlc.gesturesnap.helper.GestureRecognizerHelper
+import com.nlc.gesturesnap.helper.PermissionHelper
+import com.nlc.gesturesnap.screen.capture.ui.value.GestureCategory
+import com.nlc.gesturesnap.screen.capture.view_model.GestureDetectViewModel
+import com.nlc.gesturesnap.screen.capture.view_model.GridViewModel
+import com.nlc.gesturesnap.screen.capture.view_model.RecentPhotoViewModel
+import com.nlc.gesturesnap.screen.capture.view_model.TimerViewModel
+import com.nlc.gesturesnap.screen.permission.CameraPermissionActivity
+import java.io.File
+import java.nio.ByteBuffer
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import com.nlc.gesturesnap.screen.permission.CameraPermissionActivity
 
 class CameraFragment : Fragment(),
     GestureRecognizerHelper.GestureRecognizerListener {
+
+    private val requestWriteExternalPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                takePhoto()
+            }
+        }
 
     companion object {
         private const val TAG = "Hand gesture recognizer"
@@ -33,6 +60,8 @@ class CameraFragment : Fragment(),
 
     private val fragmentCameraBinding
         get() = _fragmentCameraBinding!!
+
+    private var imageCapture: ImageCapture? = null
 
     private lateinit var gestureRecognizerHelper: GestureRecognizerHelper
     private var preview: Preview? = null
@@ -48,11 +77,6 @@ class CameraFragment : Fragment(),
         super.onResume()
         // Make sure that all permissions are still present, since the
         // user could have removed them while the app was in paused state.
-
-        if (!CameraPermissionActivity.hasPermissions(requireContext())) {
-            val intent = Intent(requireContext(), CameraPermissionActivity::class.java)
-            startActivity(intent)
-        }
 
         // Start the GestureRecognizerHelper again when users come back
         // to the foreground.
@@ -89,12 +113,24 @@ class CameraFragment : Fragment(),
         savedInstanceState: Bundle?
     ): View {
         _fragmentCameraBinding =
-            FragmentCameraBinding.inflate(inflater, container, false)
+            DataBindingUtil.inflate(inflater, R.layout.fragment_camera, container, false)
+
+        fragmentCameraBinding.lifecycleOwner = this
+
+        val gridViewModel = ViewModelProvider(requireActivity())[GridViewModel::class.java]
+        fragmentCameraBinding.gridViewModel = gridViewModel
+
+        val gestureDetectViewModel = ViewModelProvider(requireActivity())[GestureDetectViewModel::class.java]
+        fragmentCameraBinding.gestureDetectViewModel = gestureDetectViewModel
+
+        val timerViewModel = ViewModelProvider(requireActivity())[TimerViewModel::class.java]
+        timerViewModel.photoSavingTrigger.observe(requireActivity()) {
+            takePhoto()
+        }
 
         return fragmentCameraBinding.root
     }
 
-    @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -167,6 +203,8 @@ class CameraFragment : Fragment(),
                     }
                 }
 
+        imageCapture = ImageCapture.Builder().build()
+
         // Must unbind the use-cases before rebinding them
         cameraProvider.unbindAll()
 
@@ -174,7 +212,7 @@ class CameraFragment : Fragment(),
             // A variable number of use-cases can be passed here -
             // camera provides access to CameraControl & CameraInfo
             camera = cameraProvider.bindToLifecycle(
-                this, cameraSelector, preview, imageAnalyzer
+                this, cameraSelector, preview, imageAnalyzer, imageCapture
             )
 
             // Attach the viewfinder's surface provider to preview use case
@@ -208,15 +246,30 @@ class CameraFragment : Fragment(),
                 // Show result of recognized gesture
                 val gestureCategories = resultBundle.results.first().gestures()
 
-                if (gestureCategories.isNotEmpty()) {
+                val selectedCategory = fragmentCameraBinding.gestureDetectViewModel?.currentHandGesture?.value?.gestureCategory
+                selectedCategory?.let {
 
-                    Log.d(TAG, gestureCategories.first().get(0).categoryName())
+                    var gestureCategoryName : String? = null
 
-//                    gestureRecognizerResultAdapter.updateResults(
-//                        gestureCategories.first()
-//                    )
-                } else {
-                    // gestureRecognizerResultAdapter.updateResults(emptyList())
+                    if(gestureCategories.isNotEmpty()){
+                        gestureCategoryName = gestureCategories.first()[0].categoryName()
+                    }
+
+                    val isDetecting = fragmentCameraBinding.gestureDetectViewModel?.isDetecting() ?: true
+
+                    if (gestureCategoryName != null
+                        && gestureCategoryName != GestureCategory.NONE.stringValue
+                        && it != GestureCategory.NONE
+                        && (it.stringValue == gestureCategoryName || it == GestureCategory.ALl)
+                    ) {
+                        if(!isDetecting){
+                            fragmentCameraBinding.gestureDetectViewModel?.setIsDetecting(true)
+                            fragmentCameraBinding.gestureDetectViewModel?.startTimer()
+                        }
+                    } else if(isDetecting){
+                        fragmentCameraBinding.gestureDetectViewModel?.setIsDetecting(false)
+                        fragmentCameraBinding.gestureDetectViewModel?.cancelTimer()
+                    }
                 }
 
                 // Pass necessary information to OverlayView for drawing on the canvas
@@ -238,5 +291,72 @@ class CameraFragment : Fragment(),
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
             //gestureRecognizerResultAdapter.updateResults(emptyList())
         }
+    }
+
+    fun takePhoto() {
+
+        if(!PermissionHelper.isCameraPermissionGranted(requireContext())){
+            Toast.makeText(
+                requireContext(),
+                "Camera permission isn't granted",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
+
+        if(!PermissionHelper.isExternalStoragePermissionGranted(requireContext())){
+            Toast.makeText(
+                requireContext(),
+                "External storage permission isn't granted",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        // Get a stable reference of the
+        // modifiable image capture use case
+        val imageCapture = imageCapture ?: return
+
+        // Create time-stamped output file to hold the image
+        val photoName = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis()) + ".jpg"
+
+        imageCapture.takePicture(
+            ContextCompat.getMainExecutor(requireContext()),
+            object : ImageCapture.OnImageCapturedCallback() {
+                override fun onError(exception: ImageCaptureException) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Can't take a photo. Something went wrong!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    super.onError(exception)
+                }
+
+                override fun onCaptureSuccess(image: ImageProxy) {
+                    super.onCaptureSuccess(image)
+
+                    val recentPhotoViewModel =
+                        ViewModelProvider(requireActivity())[RecentPhotoViewModel::class.java]
+
+                    val planeProxy = image.planes[0]
+                    val buffer: ByteBuffer = planeProxy.buffer
+                    val bytes = ByteArray(buffer.remaining())
+                    buffer.get(bytes)
+
+                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+
+                    recentPhotoViewModel.setRecentPhoto(bitmap)
+
+                    val photoUri = MediaHelper.createPhotoUri(requireContext(), "Pictures", photoName)
+
+                    MediaHelper.savePhoto(requireContext(), bitmap, photoUri)
+
+                    image.close()
+                }
+            }
+        )
     }
 }

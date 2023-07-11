@@ -9,7 +9,8 @@ class GestureDetectOption (
     val inactiveIcon: Drawable,
     val text: String,
     val gestureCategory: GestureCategory,
-    var isSelecting: Boolean = false
+    var isSelecting: Boolean = false,
+    val progressIcon: Drawable? = null,
 ) {
 
     val activeIcon: Drawable = inactiveIcon.constantState?.newDrawable()?.mutate()!!

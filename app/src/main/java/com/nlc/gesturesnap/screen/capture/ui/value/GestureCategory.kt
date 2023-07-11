@@ -1,6 +1,6 @@
 package com.nlc.gesturesnap.screen.capture.ui.value
 
-enum class GestureCategory(private var stringValue: String) {
+enum class GestureCategory(var stringValue: String) {
     ALl("All"),
     NONE("None"),
     CLOSED_FIST("Closed_Fist"),

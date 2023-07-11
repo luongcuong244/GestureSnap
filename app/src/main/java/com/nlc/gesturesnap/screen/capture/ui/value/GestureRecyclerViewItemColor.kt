@@ -4,5 +4,5 @@ import android.graphics.Color
 
 enum class GestureRecyclerViewItemColor(val value: Int) {
     ACTIVE_COLOR(Color.WHITE),
-    INACTIVE_COLOR(Color.parseColor("#80000000"))
+    INACTIVE_COLOR(Color.parseColor("#965C5C5C"))
 }

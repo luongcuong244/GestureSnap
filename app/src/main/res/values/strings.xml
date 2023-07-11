@@ -3,6 +3,7 @@
     <string name="title_capture">Capture</string>
     <string name="title_gallery">Gallery</string>
     <string name="title_guide">Guide</string>
+    
     <string name="all_text">All</string>
     <string name="none_text">None</string>
     <string name="closed_fist_text">Closed fist</string>
@@ -12,4 +13,19 @@
     <string name="thumb_down_text">Thumb down</string>
     <string name="victory_text">Victory</string>
     <string name="love_text">Love</string>
+    
+    <string name="permission_dialog_title">The app requires the following permissions</string>
+    <string name="camera_permission_text">Camera permissions</string>
+    <string name="camera_permission_dialog_description">We will apply for camera permission for taking pictures</string>
+    <string name="storage_permission_text">Storage permissions</string>
+    <string name="storage_permission_dialog_description">We will request storage permission to save the photos you took</string>
+
+    <string name="cancel_text">Cancel</string>
+    <string name="apply_text">Apply</string>
+    
+    <string name="click_turn_on_camera_permissions">Click Turn on camera permissions</string>
+
+    <string name="tip_text">Tip:</string>
+    <string name="camera_permission_tip">You have permanently denied the application Camera permissions. Please go to your phone\'s settings to authorize it manually.</string>
+    <string name="storage_permission_tip">You have permanently denied the application Storage permissions. Please go to your phone\'s settings to authorize it manually.</string>
 </resources>
