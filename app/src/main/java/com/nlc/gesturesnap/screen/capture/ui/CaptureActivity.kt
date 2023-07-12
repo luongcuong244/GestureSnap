@@ -3,6 +3,7 @@ package com.nlc.gesturesnap.screen.capture.ui
 import android.Manifest
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.FrameLayout
@@ -33,6 +34,17 @@ class CaptureActivity : AppCompatActivity() {
                 binding.permissionViewModel?.setCameraPermissionGranted(true)
             } else {
                 binding.permissionViewModel?.setCameraPermissionTipDialogShowing(true)
+            }
+        }
+
+    private val requestExternalPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                binding.permissionViewModel?.setStoragePermissionGranted(true)
+            } else {
+                binding.permissionViewModel?.setStoragePermissionTipDialogShowing(true)
             }
         }
 
@@ -212,7 +224,14 @@ class CaptureActivity : AppCompatActivity() {
     }
 
     fun closePermissionDialogAndRequestStoragePermission(){
+        binding.permissionViewModel?.setStoragePermissionDialogShowing(false)
 
+        val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
+
+        requestExternalPermissionLauncher.launch(
+            storagePermission
+        )
     }
 
     fun closeDialogAndOpenAppInfo(){
@@ -222,6 +241,15 @@ class CaptureActivity : AppCompatActivity() {
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
         intent.data = Uri.parse("package:$packageName")
         startActivity(intent)
+    }
+
+    fun switchToGalleryActivity(){
+        if(!PermissionHelper.isExternalStoragePermissionGranted(this)){
+            binding.permissionViewModel?.setStoragePermissionDialogShowing(true)
+            return
+        }
+
+        // navigate to gallery activity
     }
 
     override fun onResume() {

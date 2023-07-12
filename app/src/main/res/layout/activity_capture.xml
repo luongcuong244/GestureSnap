@@ -190,7 +190,8 @@
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:scaleType="centerCrop"
-            android:background="#717171"
+            android:background="@drawable/gallery_frame"
+            android:onClick="@{() -> captureActivity.switchToGalleryActivity()}"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginBottom="25dp"
@@ -213,6 +214,24 @@
             app:description="@{@string/camera_permission_tip}"
             app:onClickApplyButton="@{() -> captureActivity.closeDialogAndOpenAppInfo()}"
             app:onClickCancelButton="@{() -> permissionViewModel.setCameraPermissionTipDialogShowing(false)}"/>
+
+        <include
+            android:id="@+id/storage_permission_dialog"
+            layout="@layout/permission_dialog"
+            android:visibility="@{permissionViewModel.isStoragePermissionDialogShowing ? View.VISIBLE : View.GONE}"
+            app:icon="@{@drawable/ic_storage}"
+            app:permissionLabel="@{@string/storage_permission_text}"
+            app:description="@{@string/storage_permission_dialog_description}"
+            app:onClickApplyButton="@{() -> captureActivity.closePermissionDialogAndRequestStoragePermission()}"
+            app:onClickCancelButton="@{() -> permissionViewModel.setStoragePermissionDialogShowing(false)}"/>
+
+        <include
+            android:id="@+id/storage_permission_tip_dialog"
+            layout="@layout/permission_tip_dialog"
+            android:visibility="@{permissionViewModel.isStoragePermissionTipDialogShowing ? View.VISIBLE : View.GONE}"
+            app:description="@{@string/storage_permission_tip}"
+            app:onClickApplyButton="@{() -> captureActivity.closeDialogAndOpenAppInfo()}"
+            app:onClickCancelButton="@{() -> permissionViewModel.setStoragePermissionTipDialogShowing(false)}"/>
 
         <include
             android:id="@+id/camera_permission_warning"

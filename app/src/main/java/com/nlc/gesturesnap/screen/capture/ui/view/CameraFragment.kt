@@ -27,10 +27,7 @@ import com.nlc.gesturesnap.helper.MediaHelper
 import com.nlc.gesturesnap.helper.GestureRecognizerHelper
 import com.nlc.gesturesnap.helper.PermissionHelper
 import com.nlc.gesturesnap.screen.capture.ui.value.GestureCategory
-import com.nlc.gesturesnap.screen.capture.view_model.GestureDetectViewModel
-import com.nlc.gesturesnap.screen.capture.view_model.GridViewModel
-import com.nlc.gesturesnap.screen.capture.view_model.RecentPhotoViewModel
-import com.nlc.gesturesnap.screen.capture.view_model.TimerViewModel
+import com.nlc.gesturesnap.screen.capture.view_model.*
 import com.nlc.gesturesnap.screen.permission.CameraPermissionActivity
 import java.io.File
 import java.nio.ByteBuffer
@@ -42,15 +39,6 @@ import java.util.concurrent.TimeUnit
 
 class CameraFragment : Fragment(),
     GestureRecognizerHelper.GestureRecognizerListener {
-
-    private val requestWriteExternalPermissionLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                takePhoto()
-            }
-        }
 
     companion object {
         private const val TAG = "Hand gesture recognizer"
@@ -304,15 +292,10 @@ class CameraFragment : Fragment(),
             return
         }
 
-        val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
-
         if(!PermissionHelper.isExternalStoragePermissionGranted(requireContext())){
-            Toast.makeText(
-                requireContext(),
-                "External storage permission isn't granted",
-                Toast.LENGTH_SHORT
-            ).show()
+            val permissionViewModel =
+                ViewModelProvider(requireActivity())[PermissionViewModel::class.java]
+            permissionViewModel.setStoragePermissionDialogShowing(true)
             return
         }
 
