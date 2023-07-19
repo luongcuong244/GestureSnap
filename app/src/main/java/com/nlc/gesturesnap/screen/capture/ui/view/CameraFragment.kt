@@ -1,35 +1,30 @@
 package com.nlc.gesturesnap.screen.capture.ui.view
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.databinding.FragmentCameraBinding
-import com.nlc.gesturesnap.helper.MediaHelper
-import com.nlc.gesturesnap.helper.GestureRecognizerHelper
-import com.nlc.gesturesnap.helper.PermissionHelper
+import com.nlc.gesturesnap.helper.*
 import com.nlc.gesturesnap.screen.capture.ui.value.GestureCategory
 import com.nlc.gesturesnap.screen.capture.view_model.*
-import com.nlc.gesturesnap.screen.permission.CameraPermissionActivity
-import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
@@ -41,7 +36,7 @@ class CameraFragment : Fragment(),
     GestureRecognizerHelper.GestureRecognizerListener {
 
     companion object {
-        private const val TAG = "Hand gesture recognizer"
+        private const val TAG = "CameraFragment"
     }
 
     private var _fragmentCameraBinding: FragmentCameraBinding? = null
@@ -56,10 +51,11 @@ class CameraFragment : Fragment(),
     private var imageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
-    private var cameraFacing = CameraSelector.LENS_FACING_FRONT
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundExecutor: ExecutorService
+
+    private lateinit var relativeOrientation: OrientationLiveData
 
     override fun onResume() {
         super.onResume()
@@ -105,15 +101,41 @@ class CameraFragment : Fragment(),
 
         fragmentCameraBinding.lifecycleOwner = this
 
-        val gridViewModel = ViewModelProvider(requireActivity())[GridViewModel::class.java]
-        fragmentCameraBinding.gridViewModel = gridViewModel
-
         val gestureDetectViewModel = ViewModelProvider(requireActivity())[GestureDetectViewModel::class.java]
         fragmentCameraBinding.gestureDetectViewModel = gestureDetectViewModel
 
         val timerViewModel = ViewModelProvider(requireActivity())[TimerViewModel::class.java]
         timerViewModel.photoSavingTrigger.observe(requireActivity()) {
             takePhoto()
+        }
+
+        val cameraModeViewModel =
+            ViewModelProvider(requireActivity())[CameraModeViewModel::class.java]
+
+        fragmentCameraBinding.cameraModeViewModel = cameraModeViewModel
+
+        cameraModeViewModel.cameraAspectRatio.observe(requireActivity()) {
+            if(cameraProvider != null){
+                bindCameraUseCases()
+            }
+        }
+
+        cameraModeViewModel.cameraOrientation.observe(requireActivity()) {
+            if(cameraProvider != null){
+                bindCameraUseCases()
+            }
+        }
+
+        cameraModeViewModel.flashOption.observe(requireActivity()) {
+            if(cameraProvider != null){
+                bindCameraUseCases()
+            }
+        }
+
+        relativeOrientation = OrientationLiveData(requireContext()).apply {
+            observe(viewLifecycleOwner) { orientation ->
+                Log.d(TAG, "Orientation changed: $orientation")
+            }
         }
 
         return fragmentCameraBinding.root
@@ -162,24 +184,30 @@ class CameraFragment : Fragment(),
     }
 
     // Declare and bind preview, capture and analysis use cases
-    @SuppressLint("UnsafeOptInUsageError")
+    @SuppressLint("UnsafeOptInUsageError", "RestrictedApi")
     private fun bindCameraUseCases() {
+
+        val cameraModeViewModel = ViewModelProvider(requireActivity())[CameraModeViewModel::class.java]
+
+        val aspectRatio = cameraModeViewModel.cameraAspectRatio.value ?: AspectRatio.RATIO_4_3
 
         // CameraProvider
         val cameraProvider = cameraProvider
             ?: throw IllegalStateException("Camera initialization failed.")
 
+        val cameraOrientation = cameraModeViewModel.cameraOrientation.value?.value ?: CameraSelector.LENS_FACING_BACK
+
         val cameraSelector =
-            CameraSelector.Builder().requireLensFacing(cameraFacing).build()
+            CameraSelector.Builder().requireLensFacing(cameraOrientation).build()
 
         // Preview. Only using the 4:3 ratio because this is the closest to our models
-        preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_16_9)
+        preview = Preview.Builder().setTargetAspectRatio(aspectRatio)
             .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
             .build()
 
         // ImageAnalysis. Using RGBA 8888 to match how our models work
         imageAnalyzer =
-            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_16_9)
+            ImageAnalysis.Builder().setTargetAspectRatio(aspectRatio)
                 .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
@@ -191,7 +219,12 @@ class CameraFragment : Fragment(),
                     }
                 }
 
-        imageCapture = ImageCapture.Builder().build()
+        val flashMode = cameraModeViewModel.flashOption.value?.value ?: ImageCapture.FLASH_MODE_OFF
+
+        imageCapture = ImageCapture.Builder()
+            .setTargetAspectRatio(aspectRatio)
+            .setFlashMode(flashMode)
+            .build()
 
         // Must unbind the use-cases before rebinding them
         cameraProvider.unbindAll()
@@ -207,6 +240,8 @@ class CameraFragment : Fragment(),
             preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
         } catch (exc: Exception) {
             Log.e(TAG, "Use case binding failed", exc)
+        } finally {
+            cameraModeViewModel.setShouldRefreshCamera(true)
         }
     }
 
@@ -281,7 +316,7 @@ class CameraFragment : Fragment(),
         }
     }
 
-    fun takePhoto() {
+    private fun takePhoto() {
 
         if(!PermissionHelper.isCameraPermissionGranted(requireContext())){
             Toast.makeText(
@@ -336,6 +371,16 @@ class CameraFragment : Fragment(),
                     val photoUri = MediaHelper.createPhotoUri(requireContext(), "Pictures", photoName)
 
                     MediaHelper.savePhoto(requireContext(), bitmap, photoUri)
+
+                    MediaHelper.getLatestPhotoPath(requireContext())?.let {
+                        val rotation = relativeOrientation.value ?: 0
+                        val exifOrientation = computeExifOrientation(rotation, false)
+
+                        val exif = ExifInterface(it)
+                        exif.setAttribute(
+                            ExifInterface.TAG_ORIENTATION, exifOrientation.toString())
+                        exif.saveAttributes()
+                    }
 
                     image.close()
                 }

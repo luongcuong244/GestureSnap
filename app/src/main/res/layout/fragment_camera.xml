@@ -9,8 +9,8 @@
             name="gestureDetectViewModel"
             type="com.nlc.gesturesnap.screen.capture.view_model.GestureDetectViewModel" />
         <variable
-            name="gridViewModel"
-            type="com.nlc.gesturesnap.screen.capture.view_model.GridViewModel" />
+            name="cameraModeViewModel"
+            type="com.nlc.gesturesnap.screen.capture.view_model.CameraModeViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -41,7 +41,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="@{gridViewModel.isOpenGrid ? View.VISIBLE : View.GONE}">
+            android:visibility="@{cameraModeViewModel.isOpenGrid ? View.VISIBLE : View.GONE}">
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/vertical_line_left"

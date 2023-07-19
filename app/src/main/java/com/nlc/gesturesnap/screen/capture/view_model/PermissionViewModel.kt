@@ -25,10 +25,16 @@ class PermissionViewModel : ViewModel() {
     val isStoragePermissionTipDialogShowing : LiveData<Boolean> = _isStoragePermissionTipDialogShowing
 
     fun setCameraPermissionGranted(value: Boolean){
+        if(_isCameraPermissionGranted.value == value){
+            return
+        }
         _isCameraPermissionGranted.value = value
     }
 
     fun setStoragePermissionGranted(value: Boolean){
+        if(_isStoragePermissionGranted.value == value){
+            return
+        }
         _isStoragePermissionGranted.value = value
     }
 

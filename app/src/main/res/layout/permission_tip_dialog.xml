@@ -2,6 +2,9 @@
 <layout xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
+            name="screenRotationValue"
+            type="java.lang.Integer" />
+        <variable
             name="description"
             type="java.lang.String" />
         <variable
@@ -21,6 +24,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:rotation="@{screenRotationValue}"
             android:layout_margin="20dp"
             android:background="@drawable/rounded_rect"
             android:paddingTop="15dp"

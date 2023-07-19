@@ -2,7 +2,6 @@ package com.nlc.gesturesnap.screen.capture.view_model
 
 import android.content.Context
 import android.os.CountDownTimer
-import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -12,6 +11,8 @@ import com.nlc.gesturesnap.screen.capture.model.GestureDetectOption
 import com.nlc.gesturesnap.screen.capture.ui.value.GestureCategory
 
 class GestureDetectViewModel : ViewModel() {
+
+    val HAND_DETECTING_TIME_IN_MILLI = 3000L
 
     private var _countDownTimer : CountDownTimer? = null
     private var _isDetecting : Boolean = false
@@ -133,9 +134,9 @@ class GestureDetectViewModel : ViewModel() {
     }
 
     fun startTimer(){
-        _countDownTimer = object : CountDownTimer(3000, 100) {
+        _countDownTimer = object : CountDownTimer(HAND_DETECTING_TIME_IN_MILLI, 100) {
             override fun onTick(millisUntilFinished: Long) {
-                _handGestureProgress.value = (100 * ( 1 - millisUntilFinished / 5000.0)).toInt()
+                _handGestureProgress.value = (100 * ( 1 - millisUntilFinished / HAND_DETECTING_TIME_IN_MILLI.toDouble())).toInt()
             }
 
             override fun onFinish() {

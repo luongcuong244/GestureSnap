@@ -1,5 +1,6 @@
 package com.nlc.gesturesnap.screen.capture.ui.component
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -20,6 +21,7 @@ class GestureDetectAdapter(
     private val callback: ItemClickListener
 ) : RecyclerView.Adapter<GestureDetectAdapter.ViewHolder>() {
 
+    private var itemRotationValue: Int = 0
     private var oldSelectedIndex: Int = 0
 
     fun updateItem(option: GestureDetectOption){
@@ -34,6 +36,12 @@ class GestureDetectAdapter(
         notifyItemChanged(oldSelectedIndex)
 
         oldSelectedIndex = newSelectedIndex
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun setItemRotationValue(value : Int){
+        itemRotationValue = value
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -58,6 +66,8 @@ class GestureDetectAdapter(
             holder.mText.setTextColor(GestureRecyclerViewItemColor.INACTIVE_COLOR.value)
             holder.mIcon.setImageDrawable(option.inactiveIcon)
         }
+
+        holder.mRootView.rotation = itemRotationValue.toFloat()
 
         holder.mRootView.setOnClickListener {
             callback.onItemClicked(position)

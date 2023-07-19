@@ -11,26 +11,23 @@
             name="captureActivity"
             type="com.nlc.gesturesnap.screen.capture.ui.CaptureActivity" />
         <variable
-            name="cameraAspectRatioViewModel"
-            type="com.nlc.gesturesnap.screen.capture.view_model.CameraAspectRatioViewModel" />
-        <variable
             name="gestureDetectViewModel"
             type="com.nlc.gesturesnap.screen.capture.view_model.GestureDetectViewModel" />
         <variable
             name="timerViewModel"
             type="com.nlc.gesturesnap.screen.capture.view_model.TimerViewModel" />
         <variable
-            name="gridViewModel"
-            type="com.nlc.gesturesnap.screen.capture.view_model.GridViewModel" />
-        <variable
-            name="flashViewModel"
-            type="com.nlc.gesturesnap.screen.capture.view_model.FlashViewModel" />
+            name="cameraModeViewModel"
+            type="com.nlc.gesturesnap.screen.capture.view_model.CameraModeViewModel" />
         <variable
             name="cameraFragment"
             type="com.nlc.gesturesnap.screen.capture.ui.view.CameraFragment" />
         <variable
             name="permissionViewModel"
             type="com.nlc.gesturesnap.screen.capture.view_model.PermissionViewModel" />
+        <variable
+            name="screenRotation"
+            type="com.nlc.gesturesnap.helper.OrientationLiveData" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -54,6 +51,7 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginBottom="@dimen/small_padding"
+            android:rotation="@{-screenRotation.intValue()}"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBottom_toTopOf="@id/option_bar"
@@ -88,6 +86,7 @@
                 android:id="@+id/timer_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:rotation="@{-screenRotation.intValue()}"
                 android:padding="8dp"
                 android:background="@drawable/black_circle"
                 android:src="@drawable/ic_timer"
@@ -98,36 +97,40 @@
                 android:id="@+id/grid_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:rotation="@{-screenRotation.intValue()}"
                 android:padding="8dp"
                 android:background="@drawable/black_circle"
-                android:src="@{ gridViewModel.isOpenGrid ? @drawable/ic_grid_on : @drawable/ic_grid_off }"
-                android:onClick="@{() -> gridViewModel.switchValue()}">
+                android:src="@{ cameraModeViewModel.isOpenGrid ? @drawable/ic_grid_on : @drawable/ic_grid_off }"
+                android:onClick="@{() -> cameraModeViewModel.switchGridMode()}">
             </ImageButton>
 
             <ImageButton
                 android:id="@+id/aspect_ratio_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:rotation="@{-screenRotation.intValue()}"
                 android:padding="8dp"
                 android:background="@drawable/black_circle"
-                android:src="@{cameraAspectRatioViewModel.cameraAspectRatio == AspectRatio.RATIO_4_3 ? @drawable/ic_ratio_4_3 : @drawable/ic_ratio_16_9}"
-                android:onClick="@{() -> cameraAspectRatioViewModel.switchAspectRatio()}">
+                android:src="@{cameraModeViewModel.cameraAspectRatio == AspectRatio.RATIO_4_3 ? @drawable/ic_ratio_4_3 : @drawable/ic_ratio_16_9}"
+                android:onClick="@{() -> cameraModeViewModel.switchAspectRatio()}">
             </ImageButton>
 
             <ImageButton
                 android:id="@+id/flash_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:rotation="@{-screenRotation.intValue()}"
                 android:padding="8dp"
                 android:background="@drawable/black_circle"
                 android:src="@drawable/ic_flash"
-                android:onClick="@{() -> flashViewModel.nextValue()}">
+                android:onClick="@{() -> cameraModeViewModel.switchFlashMode()}">
             </ImageButton>
 
             <ImageButton
                 android:id="@+id/polyline_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:rotation="@{-screenRotation.intValue()}"
                 android:padding="8dp"
                 android:background="@drawable/black_circle"
                 android:src="@{gestureDetectViewModel.isDrawHand ? @drawable/ic_polylines_yellow : @drawable/ic_polylines}"
@@ -145,22 +148,6 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"/>
 
-        <TextView
-            android:id="@+id/timer_text"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fontFamily="@font/poppins_semibold"
-            android:focusable="true"
-            android:clickable="true"
-            android:focusableInTouchMode="true"
-            android:background="#03FFFFFF"
-            android:textColor="@color/white"
-            android:textSize="100sp"
-            android:gravity="center"
-            android:textAlignment="center"
-            android:visibility="@{timerViewModel.timerValue > 0 ? View.VISIBLE : View.GONE }"
-            android:text="@{String.valueOf(timerViewModel.timerValue)}" />
-
         <ImageButton
             android:id="@+id/capture_button"
             android:layout_width="60dp"
@@ -171,24 +158,27 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            android:onClick="@{() -> cameraFragment.takePhoto()}"/>
+            android:onClick="@{() -> timerViewModel.startTimer()}"/>
 
         <ImageButton
             android:id="@+id/flip_camera_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:rotation="@{-screenRotation.intValue()}"
             android:padding="8dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:background="@drawable/black_circle"
             android:src="@drawable/ic_flip_camera"
             android:layout_marginBottom="25dp"
-            android:layout_marginStart="25dp"/>
+            android:layout_marginStart="25dp"
+            android:onClick="@{() -> cameraModeViewModel.switchCameraOrientation()}"/>
 
         <ImageButton
             android:id="@+id/recent_photo_button"
             android:layout_width="45dp"
             android:layout_height="45dp"
+            android:rotation="@{-screenRotation.intValue()}"
             android:scaleType="centerCrop"
             android:background="@drawable/gallery_frame"
             android:onClick="@{() -> captureActivity.switchToGalleryActivity()}"
@@ -204,6 +194,7 @@
             app:icon="@{@drawable/ic_camera}"
             app:permissionLabel="@{@string/camera_permission_text}"
             app:description="@{@string/camera_permission_dialog_description}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"
             app:onClickApplyButton="@{() -> captureActivity.closePermissionDialogAndRequestCameraPermission()}"
             app:onClickCancelButton="@{() -> permissionViewModel.setCameraPermissionDialogShowing(false)}"/>
 
@@ -212,6 +203,7 @@
             layout="@layout/permission_tip_dialog"
             android:visibility="@{permissionViewModel.isCameraPermissionTipDialogShowing ? View.VISIBLE : View.GONE}"
             app:description="@{@string/camera_permission_tip}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"
             app:onClickApplyButton="@{() -> captureActivity.closeDialogAndOpenAppInfo()}"
             app:onClickCancelButton="@{() -> permissionViewModel.setCameraPermissionTipDialogShowing(false)}"/>
 
@@ -222,6 +214,7 @@
             app:icon="@{@drawable/ic_storage}"
             app:permissionLabel="@{@string/storage_permission_text}"
             app:description="@{@string/storage_permission_dialog_description}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"
             app:onClickApplyButton="@{() -> captureActivity.closePermissionDialogAndRequestStoragePermission()}"
             app:onClickCancelButton="@{() -> permissionViewModel.setStoragePermissionDialogShowing(false)}"/>
 
@@ -230,6 +223,7 @@
             layout="@layout/permission_tip_dialog"
             android:visibility="@{permissionViewModel.isStoragePermissionTipDialogShowing ? View.VISIBLE : View.GONE}"
             app:description="@{@string/storage_permission_tip}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"
             app:onClickApplyButton="@{() -> captureActivity.closeDialogAndOpenAppInfo()}"
             app:onClickCancelButton="@{() -> permissionViewModel.setStoragePermissionTipDialogShowing(false)}"/>
 
@@ -237,7 +231,32 @@
             android:id="@+id/camera_permission_warning"
             layout="@layout/camera_permission_warning"
             android:visibility="@{(!permissionViewModel.isCameraPermissionDialogShowing &amp;&amp; !permissionViewModel.isCameraPermissionTipDialogShowing &amp;&amp; !permissionViewModel.isCameraPermissionGranted) ? View.VISIBLE : View.GONE}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"
             app:onClick="@{() -> permissionViewModel.setCameraPermissionDialogShowing(true)}"/>
+
+        <RelativeLayout
+            android:id="@+id/timer_text_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:focusable="true"
+            android:clickable="true"
+            android:visibility="@{timerViewModel.timerValue > 0 ? View.VISIBLE : View.GONE }">
+
+            <TextView
+                android:id="@+id/timer_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:rotation="@{-screenRotation.intValue()}"
+                android:fontFamily="@font/poppins_semibold"
+                android:focusableInTouchMode="true"
+                android:background="#03FFFFFF"
+                android:textColor="@color/white"
+                android:textSize="100sp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:text="@{String.valueOf(timerViewModel.timerValue)}" />
+
+        </RelativeLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

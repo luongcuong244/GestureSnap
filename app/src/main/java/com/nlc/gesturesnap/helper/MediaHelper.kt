@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 
 object MediaHelper {
 
@@ -48,16 +49,14 @@ object MediaHelper {
 
         val uri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val projection = arrayOf(
-            MediaStore.Images.Media.DATA,
+            MediaStore.Images.Media.DATA
         )
 
-        val sortOrder = MediaStore.Images.Media.DATE_TAKEN + " ASC"
-
         val cursor =
-            context.contentResolver.query(uri, projection, null, null, sortOrder)
+            context.contentResolver.query(uri, projection, null, null, null)
                 ?: return null
 
-        if (!cursor.moveToFirst()) {
+        if (!cursor.moveToLast()) {
             return null
         }
 

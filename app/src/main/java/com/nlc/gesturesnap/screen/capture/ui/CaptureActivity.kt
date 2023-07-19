@@ -1,11 +1,14 @@
 package com.nlc.gesturesnap.screen.capture.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.widget.FrameLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -18,13 +21,20 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.databinding.ActivityCaptureBinding
+import com.nlc.gesturesnap.helper.MediaHelper
+import com.nlc.gesturesnap.helper.OrientationLiveData
 import com.nlc.gesturesnap.helper.PermissionHelper
 import com.nlc.gesturesnap.screen.capture.ui.component.GestureDetectAdapter
 import com.nlc.gesturesnap.screen.capture.ui.listener.ItemClickListener
+import com.nlc.gesturesnap.screen.capture.ui.value.CameraOrientation
 import com.nlc.gesturesnap.screen.capture.ui.view.CameraFragment
 import com.nlc.gesturesnap.screen.capture.view_model.*
 
 class CaptureActivity : AppCompatActivity() {
+
+    companion object {
+        private const val TAG = "CaptureActivity"
+    }
 
     private val requestCameraPermissionLauncher =
         registerForActivityResult(
@@ -72,18 +82,38 @@ class CaptureActivity : AppCompatActivity() {
 
         binding.captureActivity = this
 
+        binding.screenRotation = OrientationLiveData(this).apply {
+            observe(this@CaptureActivity) { orientation ->
+                gestureDetectAdapter?.setItemRotationValue(-orientation)
+            }
+        }
+
         setupPermissionViewModel()
         setupTimerViewModel()
         setupGestureDetectViewModel()
-        setupCameraResolutionViewModel()
-        setupGridViewModel()
-        setupFlashViewModel()
+        setupCameraModeViewModel()
         setupRecentPhotoViewModel()
     }
 
     private fun setupPermissionViewModel(){
         val permissionViewModel =
             ViewModelProvider(this)[PermissionViewModel::class.java]
+
+        permissionViewModel.isStoragePermissionGranted.observe(this) {
+            if(it){
+                val photoPath = MediaHelper.getLatestPhotoPath(this)
+                photoPath?.let {
+                    val recentPhotoViewModel =
+                        ViewModelProvider(this)[RecentPhotoViewModel::class.java]
+
+                    val bitmap = BitmapFactory.decodeFile(photoPath)
+
+                    bitmap?.let {
+                        recentPhotoViewModel.setRecentPhoto(bitmap)
+                    }
+                }
+            }
+        }
 
         permissionViewModel.setCameraPermissionDialogShowing(!PermissionHelper.isCameraPermissionGranted(this))
         permissionViewModel.setStoragePermissionDialogShowing(false)
@@ -142,67 +172,56 @@ class CaptureActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupCameraResolutionViewModel() {
+    private fun setupCameraModeViewModel(){
+        val cameraModeViewModel =
+            ViewModelProvider(this)[CameraModeViewModel::class.java]
+
+        binding.cameraModeViewModel = cameraModeViewModel
+
+        cameraModeViewModel.flashOption.observe(this) {
+            binding.flashButton.setImageDrawable(ContextCompat.getDrawable(this, it.icon))
+        }
 
         val deviceWidth = resources.displayMetrics.widthPixels
 
-        val cameraAspectRatioViewModel =
-            ViewModelProvider(this)[CameraAspectRatioViewModel::class.java]
+        cameraModeViewModel.cameraAspectRatio.observe(this) {
 
-        binding.cameraAspectRatioViewModel = cameraAspectRatioViewModel
+            try {
+                var layoutParams : FrameLayout.LayoutParams? = null
 
-        cameraAspectRatioViewModel.cameraAspectRatio.observe(this) {
+                val constraintLayout : ConstraintLayout = findViewById(R.id.capture_screen_root_view)
+                val constraintSet = ConstraintSet()
+                constraintSet.clone(constraintLayout)
 
-            var layoutParams : FrameLayout.LayoutParams? = null
+                val params = binding.handGestureProgressContainer.layoutParams as ConstraintLayout.LayoutParams
 
-            var constraintLayout : ConstraintLayout = findViewById(R.id.capture_screen_root_view)
-            val constraintSet = ConstraintSet()
-            constraintSet.clone(constraintLayout)
+                when(it){
+                    AspectRatio.RATIO_4_3 -> {
+                        layoutParams = FrameLayout.LayoutParams(deviceWidth, deviceWidth * 4 / 3)
 
-            val params = binding.handGestureProgressContainer.layoutParams as ConstraintLayout.LayoutParams
+                        constraintSet.connect(R.id.hand_gesture_progress_container, ConstraintSet.BOTTOM, R.id.fragment_container, ConstraintSet.BOTTOM)
+                        constraintSet.applyTo(constraintLayout)
 
-            when(it){
-                AspectRatio.RATIO_4_3 -> {
-                    layoutParams = FrameLayout.LayoutParams(deviceWidth, deviceWidth * 4 / 3)
+                        params.bottomMargin = resources.getDimension(R.dimen.small_padding).toInt()
+                    }
+                    AspectRatio.RATIO_16_9 -> {
+                        layoutParams = FrameLayout.LayoutParams(deviceWidth, deviceWidth * 16 / 9)
 
-                    constraintSet.connect(R.id.hand_gesture_progress_container, ConstraintSet.BOTTOM, R.id.fragment_container, ConstraintSet.BOTTOM)
-                    constraintSet.applyTo(constraintLayout)
+                        constraintSet.connect(R.id.hand_gesture_progress_container, ConstraintSet.BOTTOM, R.id.option_bar, ConstraintSet.TOP)
+                        constraintSet.applyTo(constraintLayout)
 
-                    params.bottomMargin = resources.getDimension(R.dimen.small_padding).toInt()
+                        params.bottomMargin = resources.getDimension(R.dimen.large_padding).toInt()
+                    }
                 }
-                AspectRatio.RATIO_16_9 -> {
-                    layoutParams = FrameLayout.LayoutParams(deviceWidth, deviceWidth * 16 / 9)
 
-                    constraintSet.connect(R.id.hand_gesture_progress_container, ConstraintSet.BOTTOM, R.id.option_bar, ConstraintSet.TOP)
-                    constraintSet.applyTo(constraintLayout)
-
-                    params.bottomMargin = resources.getDimension(R.dimen.large_padding).toInt()
+                if(layoutParams != null){
+                    binding.fragmentContainer.layoutParams = layoutParams
                 }
+
+                binding.handGestureProgressContainer.layoutParams = params
+            } catch (e : java.lang.Exception){
+                Log.d(TAG, e.toString())
             }
-
-            if(layoutParams != null){
-                binding.fragmentContainer.layoutParams = layoutParams
-            }
-
-            binding.handGestureProgressContainer.layoutParams = params
-        }
-    }
-
-    private fun setupGridViewModel(){
-        val gridViewModel =
-            ViewModelProvider(this)[GridViewModel::class.java]
-
-        binding.gridViewModel = gridViewModel
-    }
-
-    private fun setupFlashViewModel(){
-        val flashViewModel =
-            ViewModelProvider(this)[FlashViewModel::class.java]
-
-        binding.flashViewModel = flashViewModel
-
-        flashViewModel.flashOption.observe(this) {
-            binding.flashButton.setImageDrawable(ContextCompat.getDrawable(this, it.icon))
         }
     }
 
