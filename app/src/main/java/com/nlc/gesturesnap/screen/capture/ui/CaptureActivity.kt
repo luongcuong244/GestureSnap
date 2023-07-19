@@ -149,7 +149,7 @@ class CaptureActivity : AppCompatActivity() {
             val layoutManager =
                 LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
-            gestureDetectAdapter = GestureDetectAdapter(this, it, object : ItemClickListener {
+            gestureDetectAdapter = GestureDetectAdapter(binding.recyclerGestureDetect ,this, it, object : ItemClickListener {
                 override fun onItemClicked(index: Int) {
                     gestureDetectViewModel.setCurrentHandGesture(index)
                 }
