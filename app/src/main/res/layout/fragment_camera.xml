@@ -96,5 +96,11 @@
                 app:layout_constraintLeft_toLeftOf="@id/vertical_line_right"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <View
+            android:id="@+id/screen_flashing_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:foreground="@android:color/transparent"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -158,7 +158,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            android:onClick="@{() -> timerViewModel.startTimer()}"/>
+            android:onClick="@{() -> timerViewModel.timerValue == 0 ? cameraFragment.takePhoto() : timerViewModel.startTimer()}"/>
 
         <ImageButton
             android:id="@+id/flip_camera_button"

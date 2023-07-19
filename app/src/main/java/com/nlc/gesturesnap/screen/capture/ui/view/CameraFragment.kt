@@ -3,6 +3,7 @@ package com.nlc.gesturesnap.screen.capture.ui.view
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import android.widget.Toast
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toDrawable
 import androidx.databinding.DataBindingUtil
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
@@ -37,6 +39,7 @@ class CameraFragment : Fragment(),
 
     companion object {
         private const val TAG = "CameraFragment"
+        private const val ANIMATION_FAST_MILLIS = 50L
     }
 
     private var _fragmentCameraBinding: FragmentCameraBinding? = null
@@ -56,6 +59,18 @@ class CameraFragment : Fragment(),
     private lateinit var backgroundExecutor: ExecutorService
 
     private lateinit var relativeOrientation: OrientationLiveData
+
+    private val animationTask: Runnable by lazy {
+        Runnable {
+            // Flash white animation
+            fragmentCameraBinding.screenFlashingOverlay.background = Color.argb(150, 255, 255, 255).toDrawable()
+            // Wait for ANIMATION_FAST_MILLIS
+            fragmentCameraBinding.screenFlashingOverlay.postDelayed({
+                // Remove white flash animation
+                fragmentCameraBinding.screenFlashingOverlay.background = null
+            }, ANIMATION_FAST_MILLIS)
+        }
+    }
 
     override fun onResume() {
         super.onResume()
@@ -316,7 +331,7 @@ class CameraFragment : Fragment(),
         }
     }
 
-    private fun takePhoto() {
+    fun takePhoto() {
 
         if(!PermissionHelper.isCameraPermissionGranted(requireContext())){
             Toast.makeText(
@@ -340,6 +355,8 @@ class CameraFragment : Fragment(),
 
         // Create time-stamped output file to hold the image
         val photoName = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis()) + ".jpg"
+
+        fragmentCameraBinding.viewFinder.post(animationTask)
 
         imageCapture.takePicture(
             ContextCompat.getMainExecutor(requireContext()),
