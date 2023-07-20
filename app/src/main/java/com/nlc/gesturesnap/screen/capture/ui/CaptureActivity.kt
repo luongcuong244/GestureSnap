@@ -1,15 +1,22 @@
 package com.nlc.gesturesnap.screen.capture.ui
 
 import android.Manifest
-import android.annotation.SuppressLint
+import android.animation.Animator
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
+import android.widget.ImageButton
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
@@ -26,9 +33,10 @@ import com.nlc.gesturesnap.helper.OrientationLiveData
 import com.nlc.gesturesnap.helper.PermissionHelper
 import com.nlc.gesturesnap.screen.capture.ui.component.GestureDetectAdapter
 import com.nlc.gesturesnap.screen.capture.ui.listener.ItemClickListener
-import com.nlc.gesturesnap.screen.capture.ui.value.CameraOrientation
+import com.nlc.gesturesnap.screen.capture.ui.value.CameraOption
 import com.nlc.gesturesnap.screen.capture.ui.view.CameraFragment
 import com.nlc.gesturesnap.screen.capture.view_model.*
+
 
 class CaptureActivity : AppCompatActivity() {
 
@@ -207,7 +215,7 @@ class CaptureActivity : AppCompatActivity() {
                     AspectRatio.RATIO_16_9 -> {
                         layoutParams = FrameLayout.LayoutParams(deviceWidth, deviceWidth * 16 / 9)
 
-                        constraintSet.connect(R.id.hand_gesture_progress_container, ConstraintSet.BOTTOM, R.id.option_bar, ConstraintSet.TOP)
+                        constraintSet.connect(R.id.hand_gesture_progress_container, ConstraintSet.BOTTOM, R.id.option_bar_container, ConstraintSet.TOP)
                         constraintSet.applyTo(constraintLayout)
 
                         params.bottomMargin = resources.getDimension(R.dimen.large_padding).toInt()
@@ -280,5 +288,206 @@ class CaptureActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    fun showMenuBar(type : CameraOption){
+
+        val startPosition : Int
+        val endPosition : Int
+        val startWidth : Int
+        val endWidth : Int
+
+        when(type){
+            CameraOption.TIMER_OPTION -> {
+
+                startPosition = binding.timerButton.left
+                endPosition = 0
+                startWidth = binding.timerButton.width
+                endWidth = binding.optionBarContainer.width
+
+                setupForMenuBarShowingAnimation(
+                    binding.timerButton,
+                    binding.timerViewModel?.timerOption?.value?.icon,
+                    startWidth,
+                    startPosition
+                )
+
+                binding.substituteItemButton.setOnClickListener {
+                    hideMenuBar(CameraOption.TIMER_OPTION)
+                }
+            }
+            CameraOption.FLASH_OPTION -> {
+                startPosition = binding.flashButton.left
+                endPosition = 0
+                startWidth = binding.flashButton.width
+                endWidth = binding.optionBarContainer.width
+
+                setupForMenuBarShowingAnimation(
+                    binding.flashButton,
+                    binding.cameraModeViewModel?.flashOption?.value?.icon,
+                    startWidth,
+                    startPosition
+                )
+
+                binding.substituteItemButton.setOnClickListener {
+                    hideMenuBar(CameraOption.FLASH_OPTION)
+                }
+            }
+            else -> {
+                return
+            }
+        }
+
+        runMenuBarAnimation(startPosition, endPosition, startWidth, endWidth)
+    }
+
+    private fun setupForMenuBarShowingAnimation(realButton : ImageButton, substituteButtonIconId: Int?, menuBarWidth: Int, menuBarPosition: Int){
+        val layoutParams = binding.menuBar.layoutParams
+        layoutParams.width = menuBarWidth
+        binding.menuBar.layoutParams = layoutParams
+        binding.menuBar.x = menuBarPosition.toFloat()
+        binding.menuBar.requestLayout()
+
+        substituteButtonIconId?.let {
+            binding.substituteItemButton.setImageDrawable(ContextCompat.getDrawable(this, it))
+        }
+
+        realButton.alpha = 0f
+        realButton.isEnabled = false
+
+        binding.optionBar.visibility = View.VISIBLE
+        binding.menuBar.visibility = View.VISIBLE
+
+        val fadeOutAnimation: Animation = AnimationUtils.loadAnimation(this, R.anim.fade_out)
+        fadeOutAnimation.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation) {}
+
+            override fun onAnimationEnd(animation: Animation) {
+                binding.optionBar.visibility = View.GONE
+            }
+
+            override fun onAnimationRepeat(animation: Animation) {}
+        })
+        binding.optionBar.startAnimation(fadeOutAnimation)
+    }
+
+    private fun hideMenuBar(type: CameraOption){
+        val startPosition : Int
+        val endPosition : Int
+        val startWidth : Int
+        val endWidth : Int
+
+        when(type){
+            CameraOption.TIMER_OPTION -> {
+
+                startPosition = 0
+                endPosition = binding.timerButton.left
+                startWidth = binding.optionBarContainer.width
+                endWidth = binding.timerButton.width
+
+                setupForMenuBarHidingAnimation(
+                    startWidth,
+                    startPosition
+                )
+
+                runMenuBarAnimation(startPosition, endPosition, startWidth, endWidth) {
+                    binding.menuBar.visibility = View.GONE
+
+                    binding.timerButton.alpha = 1f
+                    binding.timerButton.isEnabled = true
+                }
+            }
+            CameraOption.FLASH_OPTION -> {
+                startPosition = 0
+                endPosition = binding.flashButton.left
+                startWidth = binding.optionBarContainer.width
+                endWidth = binding.flashButton.width
+
+                setupForMenuBarHidingAnimation(
+                    startWidth,
+                    startPosition
+                )
+
+                runMenuBarAnimation(startPosition, endPosition, startWidth, endWidth) {
+                    binding.menuBar.visibility = View.GONE
+
+                    binding.flashButton.alpha = 1f
+                    binding.flashButton.isEnabled = true
+                }
+            }
+            else -> {
+                return
+            }
+        }
+    }
+
+    private fun setupForMenuBarHidingAnimation(menuBarWidth: Int, menuBarPosition: Int){
+        val layoutParams = binding.menuBar.layoutParams
+        layoutParams.width = menuBarWidth
+        binding.menuBar.layoutParams = layoutParams
+        binding.menuBar.x = menuBarPosition.toFloat()
+        binding.menuBar.requestLayout()
+
+        val fadeInAnimation: Animation = AnimationUtils.loadAnimation(this, R.anim.fade_in)
+        fadeInAnimation.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation) {}
+
+            override fun onAnimationEnd(animation: Animation) {
+                binding.optionBar.visibility = View.VISIBLE
+            }
+
+            override fun onAnimationRepeat(animation: Animation) {}
+        })
+        binding.optionBar.startAnimation(fadeInAnimation)
+    }
+
+    private fun runMenuBarAnimation(startPosition: Int, endPosition: Int, startWidth: Int, endWidth: Int, onAnimationEnd : (() -> Unit)? = null){
+
+        val duration = 200L
+
+        val layoutParams = binding.menuBar.layoutParams
+
+        val widthAnimator: ValueAnimator = ValueAnimator.ofInt(startWidth, endWidth)
+        widthAnimator.duration = duration
+        widthAnimator.interpolator = LinearInterpolator()
+        widthAnimator.addUpdateListener {
+            val value = it.animatedValue as Int
+            layoutParams.width = value
+            binding.menuBar.layoutParams = layoutParams
+            binding.menuBar.requestLayout()
+        }
+
+        var positionAnimator : ValueAnimator? = null
+
+        if(startPosition != endPosition){
+            positionAnimator = ValueAnimator.ofFloat(0f, 1f)
+            positionAnimator.duration = duration
+            positionAnimator.interpolator = LinearInterpolator()
+            positionAnimator.addUpdateListener {
+                val fraction = it.animatedValue as Float
+                val newX = (startPosition + fraction * (endPosition - startPosition))
+                binding.menuBar.x = newX
+                binding.menuBar.requestLayout()
+            }
+        }
+
+        val animatorListener = object : Animator.AnimatorListener {
+            override fun onAnimationStart(p0: Animator) {}
+
+            override fun onAnimationEnd(p0: Animator) {
+                if (onAnimationEnd != null) {
+                    onAnimationEnd()
+                }
+            }
+
+            override fun onAnimationCancel(p0: Animator) {}
+            override fun onAnimationRepeat(p0: Animator) {}
+        }
+
+        positionAnimator?.addListener(animatorListener)
+        widthAnimator.addListener(animatorListener)
+
+        positionAnimator?.start()
+        widthAnimator.start()
     }
 }

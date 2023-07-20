@@ -3,7 +3,6 @@ package com.nlc.gesturesnap.screen.capture.ui.component
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Rect
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -172,7 +171,7 @@ class GestureDetectAdapter(
         }
     }
 
-    fun moveFirstItemToCenter(){
+    private fun moveFirstItemToCenter(){
         CoroutineScope(Dispatchers.Main).launch {
             checkReadyToScroll().await()
             scrollToMiddleAndSelect(1)
