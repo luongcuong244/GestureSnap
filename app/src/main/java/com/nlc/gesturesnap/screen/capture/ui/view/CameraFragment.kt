@@ -25,6 +25,7 @@ import com.nlc.gesturesnap.databinding.FragmentCameraBinding
 import com.nlc.gesturesnap.helper.*
 import com.nlc.gesturesnap.screen.capture.ui.value.GestureCategory
 import com.nlc.gesturesnap.screen.capture.view_model.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.nio.ByteBuffer
@@ -248,7 +249,7 @@ class CameraFragment : Fragment(),
             // A variable number of use-cases can be passed here -
             // camera provides access to CameraControl & CameraInfo
             camera = cameraProvider.bindToLifecycle(
-                this, cameraSelector, preview, imageAnalyzer, imageCapture
+                viewLifecycleOwner, cameraSelector, preview, imageAnalyzer, imageCapture
             )
 
             // Attach the viewfinder's surface provider to preview use case

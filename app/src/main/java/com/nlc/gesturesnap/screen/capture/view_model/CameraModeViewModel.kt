@@ -43,15 +43,17 @@ class CameraModeViewModel : ViewModel() {
         }
     }
 
-    fun switchFlashMode(){
+    fun switchFlashMode(option : FlashOption){
         if(!shouldRefreshCamera){
             return
         }
         shouldRefreshCamera = false
 
-        val index = FlashOption.values().indexOf(flashOption.value)
-        val size = FlashOption.values().size
-        _flashOption.value = FlashOption.values()[(index + 1) % size]
+        val isSelecting = _flashOption.value?.equals(option) ?: false
+
+        if(!isSelecting){
+            _flashOption.value = option
+        }
     }
 
     fun switchGridMode(){

@@ -24,12 +24,11 @@ class TimerViewModel : ViewModel() {
     val timerValue: LiveData<Int> = _timerValue
     val photoSavingTrigger = _photoSavingTrigger
 
-    fun nextValue(){
-        val index = TimerOption.values().indexOf(timerOption.value)
-
-        val size = TimerOption.values().size
-
-        _timerOption.value = TimerOption.values()[(index + 1) % size]
+    fun setTimerOption(option: TimerOption){
+        val isSelecting = _timerOption.value?.equals(option) ?: false
+        if (!isSelecting){
+            _timerOption.value = option
+        }
     }
 
     fun startTimer(){

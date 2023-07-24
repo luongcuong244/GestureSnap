@@ -91,6 +91,14 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent">
 
+                <LinearLayout
+                    android:id="@+id/menu_bar_list_view"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintLeft_toRightOf="@id/substitute_item_button"/>
+
                 <ImageButton
                     android:id="@+id/substitute_item_button"
                     android:layout_width="@dimen/small_button_size"
