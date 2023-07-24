@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <import type="android.view.View"/>
+        <import type="com.nlc.gesturesnap.R"/>
+        <import type="com.nlc.gesturesnap.screen.capture.ui.value.GestureCategory"/>
+        <import type="androidx.camera.core.AspectRatio"/>
+        <import type="com.nlc.gesturesnap.screen.capture.ui.value.CameraOption"/>
+        <variable
+            name="captureActivity"
+            type="com.nlc.gesturesnap.screen.capture.ui.CaptureActivity" />
+        <variable
+            name="gestureDetectViewModel"
+            type="com.nlc.gesturesnap.screen.capture.view_model.GestureDetectViewModel" />
+        <variable
+            name="timerViewModel"
+            type="com.nlc.gesturesnap.screen.capture.view_model.TimerViewModel" />
+        <variable
+            name="cameraModeViewModel"
+            type="com.nlc.gesturesnap.screen.capture.view_model.CameraModeViewModel" />
+        <variable
+            name="cameraFragment"
+            type="com.nlc.gesturesnap.screen.capture.ui.view.CameraFragment" />
+        <variable
+            name="permissionViewModel"
+            type="com.nlc.gesturesnap.screen.capture.view_model.PermissionViewModel" />
+        <variable
+            name="screenRotation"
+            type="com.nlc.gesturesnap.helper.OrientationLiveData" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/capture_screen_root_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black">
+
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="15dp"
+            app:layout_constraintBottom_toTopOf="@id/option_bar_container"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+
+        <RelativeLayout
+            android:id="@+id/hand_gesture_progress_container"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="@dimen/small_padding"
+            android:rotation="@{-screenRotation.intValue()}"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/option_bar_container"
+            android:visibility="@{ (gestureDetectViewModel.currentHandGesture.gestureCategory.equals(GestureCategory.NONE) || timerViewModel.timerValue > 0 ) ? View.GONE : View.VISIBLE }">
+
+            <ProgressBar
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:rotation="270"
+                android:progress="@{gestureDetectViewModel.handGestureProgress}"
+                android:progressDrawable="@drawable/hand_gesture_progress_bar"
+                style="?android:attr/progressBarStyleHorizontal"/>
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@{gestureDetectViewModel.handGestureProgress > 0 ? gestureDetectViewModel.currentHandGesture.progressIcon : gestureDetectViewModel.currentHandGesture.activeIcon}"
+                android:padding="10dp"/>
+        </RelativeLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/option_bar_container"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/small_button_size"
+            android:layout_marginHorizontal="25dp"
+            app:layout_constraintBottom_toTopOf="@id/capture_button"
+            android:layout_marginBottom="15dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/menu_bar"
+                android:layout_width="@dimen/small_button_size"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                android:background="@drawable/gray_rounded_rect"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <LinearLayout
+                    android:id="@+id/menu_bar_list_view"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintLeft_toRightOf="@id/substitute_item_button"/>
+
+                <ImageButton
+                    android:id="@+id/substitute_item_button"
+                    android:layout_width="@dimen/small_button_size"
+                    android:layout_height="@dimen/small_button_size"
+                    android:rotation="@{-screenRotation.intValue()}"
+                    android:src="@drawable/ic_camera"
+                    android:background="@drawable/black_circle"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent">
+                </ImageButton>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/option_bar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:flexDirection="row"
+                app:justifyContent="space_between">
+
+                <ImageButton
+                    android:id="@+id/timer_button"
+                    android:layout_width="@dimen/small_button_size"
+                    android:layout_height="@dimen/small_button_size"
+                    android:rotation="@{-screenRotation.intValue()}"
+                    android:background="@drawable/black_circle"
+                    android:src="@drawable/ic_timer"
+                    android:onClick="@{() -> captureActivity.showMenuBar(CameraOption.TIMER_OPTION)}">
+                </ImageButton>
+
+                <ImageButton
+                    android:id="@+id/grid_button"
+                    android:layout_width="@dimen/small_button_size"
+                    android:layout_height="@dimen/small_button_size"
+                    android:rotation="@{-screenRotation.intValue()}"
+                    android:background="@drawable/black_circle"
+                    android:src="@{ cameraModeViewModel.isOpenGrid ? @drawable/ic_grid_on : @drawable/ic_grid_off }"
+                    android:onClick="@{() -> cameraModeViewModel.switchGridMode()}">
+                </ImageButton>
+
+                <ImageButton
+                    android:id="@+id/aspect_ratio_button"
+                    android:layout_width="@dimen/small_button_size"
+                    android:layout_height="@dimen/small_button_size"
+                    android:rotation="@{-screenRotation.intValue()}"
+                    android:background="@drawable/black_circle"
+                    android:src="@{cameraModeViewModel.cameraAspectRatio == AspectRatio.RATIO_4_3 ? @drawable/ic_ratio_4_3 : @drawable/ic_ratio_16_9}"
+                    android:onClick="@{() -> cameraModeViewModel.switchAspectRatio()}">
+                </ImageButton>
+
+                <ImageButton
+                    android:id="@+id/flash_button"
+                    android:layout_width="@dimen/small_button_size"
+                    android:layout_height="@dimen/small_button_size"
+                    android:rotation="@{-screenRotation.intValue()}"
+                    android:background="@drawable/black_circle"
+                    android:src="@drawable/ic_flash"
+                    android:onClick="@{() -> captureActivity.showMenuBar(CameraOption.FLASH_OPTION)}">
+                </ImageButton>
+
+                <ImageButton
+                    android:id="@+id/polyline_button"
+                    android:layout_width="@dimen/small_button_size"
+                    android:layout_height="@dimen/small_button_size"
+                    android:rotation="@{-screenRotation.intValue()}"
+                    android:background="@drawable/black_circle"
+                    android:src="@{gestureDetectViewModel.isDrawHand ? @drawable/ic_polylines_yellow : @drawable/ic_polylines}"
+                    android:onClick="@{() -> gestureDetectViewModel.switchIsDrawHandValue()}">
+                </ImageButton>
+
+            </com.google.android.flexbox.FlexboxLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <LinearLayout
+            android:id="@+id/recycle_view_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_gesture_detect"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/capture_button"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/capture_button"
+            android:background="@color/transparent"
+            android:layout_marginBottom="15dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:onClick="@{() -> timerViewModel.timerValue == 0 ? cameraFragment.takePhoto() : timerViewModel.startTimer()}"/>
+
+        <ImageButton
+            android:id="@+id/flip_camera_button"
+            android:layout_width="@dimen/small_button_size"
+            android:layout_height="@dimen/small_button_size"
+            android:rotation="@{-screenRotation.intValue()}"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:background="@drawable/black_circle"
+            android:src="@drawable/ic_flip_camera"
+            android:layout_marginBottom="25dp"
+            android:layout_marginStart="25dp"
+            android:onClick="@{() -> cameraModeViewModel.switchCameraOrientation()}"/>
+
+        <ImageButton
+            android:id="@+id/recent_photo_button"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:rotation="@{-screenRotation.intValue()}"
+            android:scaleType="centerCrop"
+            android:background="@drawable/gallery_frame"
+            android:onClick="@{() -> captureActivity.switchToGalleryActivity()}"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="25dp"
+            android:layout_marginEnd="25dp"/>
+
+        <include
+            android:id="@+id/camera_permission_dialog"
+            layout="@layout/permission_dialog"
+            android:visibility="@{permissionViewModel.isCameraPermissionDialogShowing ? View.VISIBLE : View.GONE}"
+            app:icon="@{@drawable/ic_camera}"
+            app:permissionLabel="@{@string/camera_permission_text}"
+            app:description="@{@string/camera_permission_dialog_description}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"
+            app:onClickApplyButton="@{() -> captureActivity.closePermissionDialogAndRequestCameraPermission()}"
+            app:onClickCancelButton="@{() -> permissionViewModel.setCameraPermissionDialogShowing(false)}"/>
+
+        <include
+            android:id="@+id/camera_permission_tip_dialog"
+            layout="@layout/permission_tip_dialog"
+            android:visibility="@{permissionViewModel.isCameraPermissionTipDialogShowing ? View.VISIBLE : View.GONE}"
+            app:description="@{@string/camera_permission_tip}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"
+            app:onClickApplyButton="@{() -> captureActivity.closeDialogAndOpenAppInfo()}"
+            app:onClickCancelButton="@{() -> permissionViewModel.setCameraPermissionTipDialogShowing(false)}"/>
+
+        <include
+            android:id="@+id/storage_permission_dialog"
+            layout="@layout/permission_dialog"
+            android:visibility="@{permissionViewModel.isStoragePermissionDialogShowing ? View.VISIBLE : View.GONE}"
+            app:icon="@{@drawable/ic_storage}"
+            app:permissionLabel="@{@string/storage_permission_text}"
+            app:description="@{@string/storage_permission_dialog_description}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"
+            app:onClickApplyButton="@{() -> captureActivity.closePermissionDialogAndRequestStoragePermission()}"
+            app:onClickCancelButton="@{() -> permissionViewModel.setStoragePermissionDialogShowing(false)}"/>
+
+        <include
+            android:id="@+id/storage_permission_tip_dialog"
+            layout="@layout/permission_tip_dialog"
+            android:visibility="@{permissionViewModel.isStoragePermissionTipDialogShowing ? View.VISIBLE : View.GONE}"
+            app:description="@{@string/storage_permission_tip}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"
+            app:onClickApplyButton="@{() -> captureActivity.closeDialogAndOpenAppInfo()}"
+            app:onClickCancelButton="@{() -> permissionViewModel.setStoragePermissionTipDialogShowing(false)}"/>
+
+        <include
+            android:id="@+id/camera_permission_warning"
+            layout="@layout/camera_permission_warning"
+            android:visibility="@{(!permissionViewModel.isCameraPermissionDialogShowing &amp;&amp; !permissionViewModel.isCameraPermissionTipDialogShowing &amp;&amp; !permissionViewModel.isCameraPermissionGranted) ? View.VISIBLE : View.GONE}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"
+            app:onClick="@{() -> permissionViewModel.setCameraPermissionDialogShowing(true)}"/>
+
+        <RelativeLayout
+            android:id="@+id/timer_text_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:focusable="true"
+            android:clickable="true"
+            android:visibility="@{timerViewModel.timerValue > 0 ? View.VISIBLE : View.GONE }">
+
+            <TextView
+                android:id="@+id/timer_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:rotation="@{-screenRotation.intValue()}"
+                android:fontFamily="@font/poppins_semibold"
+                android:focusableInTouchMode="true"
+                android:background="#03FFFFFF"
+                android:textColor="@color/white"
+                android:textSize="100sp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:text="@{String.valueOf(timerViewModel.timerValue)}" />
+
+        </RelativeLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.flexbox.FlexboxLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/hand_action_root_view"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingHorizontal="20dp"
+    app:flexDirection="column"
+    app:alignItems="center">
+
+    <ImageView
+        android:id="@+id/hand_action_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="5dp"
+        android:src="@drawable/ic_fist_outline"/>
+
+    <TextView
+        android:id="@+id/hand_action_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:textSize="11sp"
+        android:text="@string/closed_fist_text"/>
+</com.google.android.flexbox.FlexboxLayout>
