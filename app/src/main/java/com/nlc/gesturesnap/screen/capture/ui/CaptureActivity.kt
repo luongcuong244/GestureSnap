@@ -29,6 +29,7 @@ import com.nlc.gesturesnap.screen.capture.ui.listener.ItemClickListener
 import com.nlc.gesturesnap.screen.capture.ui.value.CameraOption
 import com.nlc.gesturesnap.screen.capture.ui.view.CameraFragment
 import com.nlc.gesturesnap.screen.capture.view_model.*
+import com.nlc.gesturesnap.screen.gallery.ui.GalleryActivity
 
 class CaptureActivity : AppCompatActivity() {
 
@@ -273,6 +274,8 @@ class CaptureActivity : AppCompatActivity() {
         }
 
         // navigate to gallery activity
+        val intent = Intent(this, GalleryActivity :: class.java)
+        startActivity(intent)
     }
 
     fun showMenuBar(cameraOption: CameraOption){
