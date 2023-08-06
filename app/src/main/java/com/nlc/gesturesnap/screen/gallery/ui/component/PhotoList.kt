@@ -45,7 +45,8 @@ fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()
             .offset(0.dp, offsetValue - bottomBarHeight),
         columns = GridCells.Fixed(3),
         verticalArrangement = Arrangement.spacedBy(2.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        contentPadding = PaddingValues(top = bottomBarHeight - offsetValue)
     ) {
         items(
             items = galleryViewModel.photos,
