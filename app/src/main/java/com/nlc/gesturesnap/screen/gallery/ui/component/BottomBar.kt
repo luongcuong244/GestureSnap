@@ -39,17 +39,12 @@ fun BoxScope.BottomBar(activityActions: GalleryActivity.Actions, translationYVal
             .fillMaxWidth()
             .height(bottomBarHeight)
             .align(Alignment.BottomEnd)
-            .offset(0.dp, translationYValue),
+            .offset(0.dp, translationYValue)
+            .background(color = colorResource(R.color.gray_white)) // note the order of background method and padding method
+            .padding(start = 15.dp, end = 5.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = colorResource(R.color.gray_white)) // note the order of background method and padding method
-                .padding(start = 15.dp, end = 5.dp),
-        ) {
-            SelectedItemsText()
-            DeleteButton(activityActions)
-        }
+        SelectedItemsText()
+        DeleteButton(activityActions)
     }
 }
 
