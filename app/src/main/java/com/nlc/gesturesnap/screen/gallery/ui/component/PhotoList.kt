@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -39,6 +40,13 @@ import java.io.File
 
 @Composable
 fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()){
+
+    val listState = rememberLazyGridState()
+
+    LaunchedEffect(Unit){
+        listState.scrollToItem(galleryViewModel.photos.lastIndex)
+    }
+
     LazyVerticalGrid(
         modifier = Modifier
             .fillMaxSize()
@@ -46,7 +54,8 @@ fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()
         columns = GridCells.Fixed(3),
         verticalArrangement = Arrangement.spacedBy(2.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
-        contentPadding = PaddingValues(top = bottomBarHeight - offsetValue)
+        contentPadding = PaddingValues(top = bottomBarHeight - offsetValue),
+        state = listState
     ) {
         items(
             items = galleryViewModel.photos,

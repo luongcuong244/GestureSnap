@@ -7,10 +7,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
 import com.nlc.gesturesnap.model.PhotoInfo
-import java.io.File
-
 
 object MediaHelper {
 
@@ -44,11 +41,6 @@ object MediaHelper {
         } catch (e: java.lang.Exception){
             false
         }
-    }
-
-    fun deletePhoto(path: String) : Boolean {
-        val file = File(path)
-        return file.delete()
     }
 
     fun getLatestPhotoPath(context: Context): String? {
@@ -93,30 +85,15 @@ object MediaHelper {
 
         val photos = mutableListOf<PhotoInfo>()
 
-        if (!cursor.moveToLast()) {
-            return emptyList()
-        }
+        while (cursor.moveToNext()) {
 
-        var imageId = cursor.getLong(0)
-        var photoUri = ContentUris.withAppendedId(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            imageId
-        )
-        var photoPath = cursor.getString(1)
-
-        photos.add(PhotoInfo(photoPath, photoUri))
-
-        while (cursor.moveToPrevious()) {
-
-            imageId = cursor.getLong(0)
-            photoUri = ContentUris.withAppendedId(
+            val imageId = cursor.getLong(0)
+            val photoUri = ContentUris.withAppendedId(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 imageId
             )
 
-            Log.d("AGDGGDGD", photoUri.toString())
-
-            photoPath = cursor.getString(1)
+            val photoPath = cursor.getString(1)
 
             photos.add(PhotoInfo(photoPath, photoUri))
         }
