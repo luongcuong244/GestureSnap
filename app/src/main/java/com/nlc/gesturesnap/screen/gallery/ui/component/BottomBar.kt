@@ -27,12 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.screen.gallery.GalleryActivity
 import com.nlc.gesturesnap.screen.gallery.ui.bottomBarHeight
 import com.nlc.gesturesnap.screen.gallery.ui.custom_widget.TouchableOpacityButton
 import com.nlc.gesturesnap.screen.gallery.view_model.GalleryViewModel
 
 @Composable
-fun BoxScope.BottomBar(translationYValue: Dp){
+fun BoxScope.BottomBar(activityActions: GalleryActivity.Actions, translationYValue: Dp){
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -47,7 +48,7 @@ fun BoxScope.BottomBar(translationYValue: Dp){
                 .padding(start = 15.dp, end = 5.dp),
         ) {
             SelectedItemsText()
-            DeleteButton()
+            DeleteButton(activityActions)
         }
     }
 }
@@ -66,7 +67,7 @@ fun BoxScope.SelectedItemsText(galleryViewModel: GalleryViewModel = viewModel())
 }
 
 @Composable
-fun BoxScope.DeleteButton(galleryViewModel: GalleryViewModel = viewModel()){
+fun BoxScope.DeleteButton(activityActions: GalleryActivity.Actions, galleryViewModel: GalleryViewModel = viewModel()){
 
     val isEnable = galleryViewModel.selectedItemsCount.value > 0
 
@@ -74,7 +75,15 @@ fun BoxScope.DeleteButton(galleryViewModel: GalleryViewModel = viewModel()){
         Color.Blue else Color.Gray
 
     TouchableOpacityButton(
-        onClick = {},
+        onClick = {
+            activityActions.deletePhotos(
+                galleryViewModel.photos.filter {
+                    it.isSelecting
+                }.map {
+                    it.uri
+                }
+            )
+        },
         modifier = Modifier
             .align(Alignment.CenterEnd)
             .width(50.dp)

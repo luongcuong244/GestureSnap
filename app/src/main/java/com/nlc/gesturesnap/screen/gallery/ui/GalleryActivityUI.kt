@@ -51,7 +51,7 @@ fun ScreenContent(activityActions: GalleryActivity.Actions, galleryViewModel: Ga
                     .fillMaxSize()
             ) {
                 PhotosList(bottomBarTranslationValue)
-                BottomBar(bottomBarTranslationValue)
+                BottomBar(activityActions, bottomBarTranslationValue)
             }
             OverlayBackground()
             Header(activityActions)
