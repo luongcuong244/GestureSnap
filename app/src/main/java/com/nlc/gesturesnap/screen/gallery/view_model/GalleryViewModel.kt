@@ -12,8 +12,6 @@ class GalleryViewModel : ViewModel() {
     val isSelectable = mutableStateOf(false)
     val selectedItemsCount = mutableStateOf(0)
 
-    val isPhotoDeletionDialogVisible = mutableStateOf(false)
-
     fun setPhotos(photos: List<Photo>){
         this.photos.clear()
         this.photos.addAll(photos)
@@ -45,9 +43,5 @@ class GalleryViewModel : ViewModel() {
         }
 
         selectedItemsText.value = "$value Photos Selected"
-    }
-
-    fun setIsPhotoDeletionDialogVisible(visible: Boolean){
-        isPhotoDeletionDialogVisible.value = visible
     }
 }

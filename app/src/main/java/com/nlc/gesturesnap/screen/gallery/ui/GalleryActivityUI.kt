@@ -25,7 +25,6 @@ import com.nlc.gesturesnap.screen.gallery.GalleryActivity
 import com.nlc.gesturesnap.screen.gallery.ui.component.BackButton
 import com.nlc.gesturesnap.screen.gallery.ui.component.BottomBar
 import com.nlc.gesturesnap.screen.gallery.ui.component.ChoiceButton
-import com.nlc.gesturesnap.screen.gallery.ui.component.PhotoDeletionDialog
 import com.nlc.gesturesnap.screen.gallery.ui.component.PhotosList
 import com.nlc.gesturesnap.screen.gallery.view_model.GalleryViewModel
 
@@ -56,7 +55,6 @@ fun ScreenContent(activityActions: GalleryActivity.Actions, galleryViewModel: Ga
             }
             OverlayBackground()
             Header(activityActions)
-            PhotoDeletionDialog()
         }
     }
 }

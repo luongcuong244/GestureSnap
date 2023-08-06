@@ -15,14 +15,12 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.screen.gallery.GalleryActivity
 import com.nlc.gesturesnap.screen.gallery.ui.custom_widget.TouchableOpacityButton
-import com.nlc.gesturesnap.screen.gallery.view_model.GalleryViewModel
 
 @Composable
-fun BackButton(activityActions: GalleryActivity.Actions, galleryViewModel: GalleryViewModel = viewModel()){
+fun BackButton(activityActions: GalleryActivity.Actions){
     TouchableOpacityButton(
         onClick = {
             activityActions.popActivity()

@@ -74,7 +74,7 @@ fun BoxScope.DeleteButton(galleryViewModel: GalleryViewModel = viewModel()){
         Color.Blue else Color.Gray
 
     TouchableOpacityButton(
-        onClick = { galleryViewModel.setIsPhotoDeletionDialogVisible(true) },
+        onClick = {},
         modifier = Modifier
             .align(Alignment.CenterEnd)
             .width(50.dp)

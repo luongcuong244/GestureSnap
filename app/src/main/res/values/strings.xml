@@ -40,7 +40,4 @@
     <string name="selected">Selected</string>
     <string name="camera">Camera</string>
 
-    <string name="photo_deletion_dialog_title">Confirm Delete</string>
-    <string name="photo_deletion_dialog_text_content">The photos will be completely deleted from the device. Are you sure you want to delete it?</string>
-
 </resources>
