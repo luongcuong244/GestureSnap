@@ -23,7 +23,7 @@
         android:theme="@style/Theme.GestureSnap.NoActionBar"
         tools:targetApi="31">
         <activity
-            android:name=".screen.gallery.ui.GalleryActivity"
+            android:name=".screen.gallery.GalleryActivity"
             android:exported="false"/>
         <activity
             android:name=".screen.capture.ui.CaptureActivity"

@@ -1,5 +1,6 @@
 package com.nlc.gesturesnap.helper
 
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
@@ -7,6 +8,9 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
+import com.nlc.gesturesnap.model.PhotoInfo
+import java.io.File
+
 
 object MediaHelper {
 
@@ -42,6 +46,11 @@ object MediaHelper {
         }
     }
 
+    fun deletePhoto(path: String) : Boolean {
+        val file = File(path)
+        return file.delete()
+    }
+
     fun getLatestPhotoPath(context: Context): String? {
         if (!PermissionHelper.isExternalStoragePermissionGranted(context)) {
             return null
@@ -64,5 +73,55 @@ object MediaHelper {
 
         cursor.close()
         return filePath
+    }
+
+    fun getAllPhotos(context: Context) : List<PhotoInfo>{
+
+        if (!PermissionHelper.isExternalStoragePermissionGranted(context)) {
+            return emptyList()
+        }
+
+        val uri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        val projection = arrayOf(
+            MediaStore.Images.Media._ID,
+            MediaStore.Images.Media.DATA,
+        )
+
+        val cursor =
+            context.contentResolver.query(uri, projection, null, null, null)
+                ?: return emptyList()
+
+        val photos = mutableListOf<PhotoInfo>()
+
+        if (!cursor.moveToLast()) {
+            return emptyList()
+        }
+
+        var imageId = cursor.getLong(0)
+        var photoUri = ContentUris.withAppendedId(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            imageId
+        )
+        var photoPath = cursor.getString(1)
+
+        photos.add(PhotoInfo(photoPath, photoUri))
+
+        while (cursor.moveToPrevious()) {
+
+            imageId = cursor.getLong(0)
+            photoUri = ContentUris.withAppendedId(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                imageId
+            )
+
+            Log.d("AGDGGDGD", photoUri.toString())
+
+            photoPath = cursor.getString(1)
+
+            photos.add(PhotoInfo(photoPath, photoUri))
+        }
+        cursor.close()
+
+        return photos
     }
 }
