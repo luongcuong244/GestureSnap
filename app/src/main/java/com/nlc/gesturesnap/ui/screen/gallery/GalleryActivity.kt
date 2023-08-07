@@ -1,14 +1,17 @@
 package com.nlc.gesturesnap.ui.screen.gallery
 
+import android.Manifest
 import android.app.RecoverableSecurityException
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.ConditionVariable
 import android.provider.MediaStore
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
@@ -35,17 +38,27 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.helper.MediaHelper
+import com.nlc.gesturesnap.helper.PermissionHelper
 import com.nlc.gesturesnap.model.SelectablePhoto
+import com.nlc.gesturesnap.ui.component.PhotoDeletionDialog
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.BackButton
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.BottomBar
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.ChoiceButton
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.PhotoDisplayFragmentView
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.PhotosList
 import com.nlc.gesturesnap.view_model.gallery.GalleryViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class GalleryActivity : AppCompatActivity() {
 
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
+
+    private lateinit var requestExternalPermissionLauncher: ActivityResultLauncher<String>
+
+    private val condVarWaitState = ConditionVariable()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -71,6 +84,14 @@ class GalleryActivity : AppCompatActivity() {
                 actions.updateAfterDeletingPhotosSuccessfully()
             }
         }
+
+        requestExternalPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                condVarWaitState.open()
+            }
+        }
     }
 
     inner class Actions {
@@ -80,27 +101,56 @@ class GalleryActivity : AppCompatActivity() {
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
         }
 
-        fun deletePhotos(photoUris: List<Uri>) {
+        @RequiresApi(Build.VERSION_CODES.R)
+        fun deletePhotosWithApi30orLater(photoUris: List<Uri>){
+            val intentSender = MediaStore.createDeleteRequest(contentResolver, photoUris).intentSender
+            intentSender.let { sender ->
+                intentSenderLauncher.launch(
+                    IntentSenderRequest.Builder(sender).build()
+                )
+            }
+        }
+
+        fun deletePhotoWithApi29(photoUri: Uri){
+            if(Build.VERSION.SDK_INT != Build.VERSION_CODES.Q){
+                return
+            }
+
             try {
-                photoUris.forEach {
-                    contentResolver.delete(it, null, null)
-                }
+                contentResolver.delete(photoUri, null, null)
                 updateAfterDeletingPhotosSuccessfully()
             } catch (e: SecurityException) {
-                val intentSender = when {
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
-                        MediaStore.createDeleteRequest(contentResolver, photoUris).intentSender
-                    }
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
-                        val recoverableSecurityException = e as? RecoverableSecurityException
-                        recoverableSecurityException?.userAction?.actionIntent?.intentSender
-                    }
-                    else -> null
-                }
+                val recoverableSecurityException = e as? RecoverableSecurityException
+                val intentSender = recoverableSecurityException?.userAction?.actionIntent?.intentSender
+
                 intentSender?.let { sender ->
                     intentSenderLauncher.launch(
                         IntentSenderRequest.Builder(sender).build()
                     )
+                }
+            }
+        }
+
+        fun deletePhotosWithApi28orOlder(photoUris: List<Uri>){
+
+            CoroutineScope(Dispatchers.IO).launch {
+
+                var hasWriteExternalPermission = true
+
+                if(!PermissionHelper.isWriteExternalStoragePermissionGranted(this@GalleryActivity)){
+                    requestExternalPermissionLauncher.launch(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+
+                    condVarWaitState.close()
+                    hasWriteExternalPermission = condVarWaitState.block(1000) // stop and wait until the permission is granted
+                }
+
+                if(hasWriteExternalPermission) {
+                    photoUris.forEach {
+                        contentResolver.delete(it, null, null)
+                    }
+                    updateAfterDeletingPhotosSuccessfully()
                 }
             }
         }
@@ -113,6 +163,7 @@ class GalleryActivity : AppCompatActivity() {
                 it.isSelecting
             }
 
+            galleryViewModel.setIsPhotoDeletionDialogVisible(false)
             galleryViewModel.setIsSelectable(false)
         }
     }
@@ -145,6 +196,26 @@ fun GalleryActivityComposeScreen(activityActions: GalleryActivity.Actions, fragm
             }
             OverlayBackground()
             Header(activityActions)
+            
+            if(galleryViewModel.isPhotoDeletionDialogVisible.value){
+                PhotoDeletionDialog(
+                    onCancel = {
+                        galleryViewModel.setIsPhotoDeletionDialogVisible(false)
+                    },
+                    onDelete = {
+                        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q){
+                            activityActions.deletePhotosWithApi28orOlder(
+                                galleryViewModel.photos.filter {
+                                    it.isSelecting
+                                }.map {
+                                    it.uri
+                                }
+                            )
+                        }
+                    }
+                )
+            }
+            
             PhotoDisplayFragmentView(fragmentManager)
         }
     }
@@ -169,15 +240,20 @@ fun OverlayBackground(){
 
 @Composable
 fun BoxScope.Header(activityActions: GalleryActivity.Actions){
+
+    val hideChoiceButton = Build.VERSION.SDK_INT == Build.VERSION_CODES.Q
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(15.dp)
             .align(Alignment.TopCenter),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = if(hideChoiceButton) Arrangement.Start else Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ){
         BackButton(activityActions)
-        ChoiceButton()
+        if(!hideChoiceButton){
+            ChoiceButton()
+        }
     }
 }

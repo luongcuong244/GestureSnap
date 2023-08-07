@@ -51,14 +51,29 @@ class CaptureActivity : AppCompatActivity() {
             }
         }
 
-    private val requestExternalPermissionLauncher =
+    private val requestReadExternalPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
-                binding.permissionViewModel?.setStoragePermissionGranted(true)
+                if(!PermissionHelper.isWriteExternalStoragePermissionGranted(this)){
+                    requestWriteExternalPermissionLauncher.launch(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                } else {
+                    binding.permissionViewModel?.setStoragePermissionGranted(true)
+                }
             } else {
                 binding.permissionViewModel?.setStoragePermissionTipDialogShowing(true)
+            }
+        }
+
+    private val requestWriteExternalPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if(isGranted){
+                binding.permissionViewModel?.setStoragePermissionGranted(true)
             }
         }
 
@@ -130,7 +145,7 @@ class CaptureActivity : AppCompatActivity() {
         permissionViewModel.setStoragePermissionTipDialogShowing(false)
 
         permissionViewModel.setCameraPermissionGranted(PermissionHelper.isCameraPermissionGranted(this))
-        permissionViewModel.setStoragePermissionGranted(PermissionHelper.isExternalStoragePermissionGranted(this))
+        permissionViewModel.setStoragePermissionGranted(PermissionHelper.isReadExternalStoragePermissionGranted(this))
 
         binding.permissionViewModel = permissionViewModel
     }
@@ -254,7 +269,7 @@ class CaptureActivity : AppCompatActivity() {
         val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
 
-        requestExternalPermissionLauncher.launch(
+        requestReadExternalPermissionLauncher.launch(
             storagePermission
         )
     }
@@ -269,7 +284,7 @@ class CaptureActivity : AppCompatActivity() {
     }
 
     fun switchToGalleryActivity(){
-        if(!PermissionHelper.isExternalStoragePermissionGranted(this)){
+        if(!PermissionHelper.isReadExternalStoragePermissionGranted(this)){
             binding.permissionViewModel?.setStoragePermissionDialogShowing(true)
             return
         }
@@ -286,7 +301,7 @@ class CaptureActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         binding.permissionViewModel?.setCameraPermissionGranted(PermissionHelper.isCameraPermissionGranted(this))
-        binding.permissionViewModel?.setStoragePermissionGranted(PermissionHelper.isExternalStoragePermissionGranted(this))
+        binding.permissionViewModel?.setStoragePermissionGranted(PermissionHelper.isReadExternalStoragePermissionGranted(this))
     }
 
     override fun onDestroy() {

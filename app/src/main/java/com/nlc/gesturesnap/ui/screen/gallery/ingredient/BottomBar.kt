@@ -1,5 +1,6 @@
 package com.nlc.gesturesnap.ui.screen.gallery.ingredient
 
+import android.os.Build
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -71,13 +72,17 @@ fun BoxScope.DeleteButton(activityActions: GalleryActivity.Actions, galleryViewM
 
     TouchableOpacityButton(
         onClick = {
-            activityActions.deletePhotos(
-                galleryViewModel.photos.filter {
-                    it.isSelecting
-                }.map {
-                    it.uri
-                }
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                activityActions.deletePhotosWithApi30orLater(
+                    galleryViewModel.photos.filter {
+                        it.isSelecting
+                    }.map {
+                        it.uri
+                    }
+                )
+            } else {
+                galleryViewModel.setIsPhotoDeletionDialogVisible(true)
+            }
         },
         modifier = Modifier
             .align(Alignment.CenterEnd)

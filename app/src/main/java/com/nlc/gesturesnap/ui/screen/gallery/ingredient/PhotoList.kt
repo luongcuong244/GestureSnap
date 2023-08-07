@@ -49,7 +49,9 @@ fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()
     val listState = rememberLazyGridState()
 
     LaunchedEffect(Unit){
-        listState.scrollToItem(galleryViewModel.photos.lastIndex)
+        if(galleryViewModel.photos.size > 0){
+            listState.scrollToItem(galleryViewModel.photos.lastIndex)
+        }
     }
 
     LazyVerticalGrid(

@@ -44,7 +44,7 @@ object MediaHelper {
     }
 
     fun getLatestPhotoPath(context: Context): String? {
-        if (!PermissionHelper.isExternalStoragePermissionGranted(context)) {
+        if (!PermissionHelper.isReadExternalStoragePermissionGranted(context)) {
             return null
         }
 
@@ -69,7 +69,7 @@ object MediaHelper {
 
     fun getAllPhotos(context: Context) : List<PhotoInfo>{
 
-        if (!PermissionHelper.isExternalStoragePermissionGranted(context)) {
+        if (!PermissionHelper.isReadExternalStoragePermissionGranted(context)) {
             return emptyList()
         }
 

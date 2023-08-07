@@ -343,7 +343,7 @@ class CameraFragment : Fragment(),
             return
         }
 
-        if(!PermissionHelper.isExternalStoragePermissionGranted(requireContext())){
+        if(!PermissionHelper.isReadExternalStoragePermissionGranted(requireContext())){
             val permissionViewModel =
                 ViewModelProvider(requireActivity())[PermissionViewModel::class.java]
             permissionViewModel.setStoragePermissionDialogShowing(true)
