@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.screen.gallery.GalleryActivity
-import com.nlc.gesturesnap.screen.gallery.ui.custom_widget.TouchableOpacityButton
+import com.nlc.gesturesnap.jetpack_compose.custom_widget.TouchableOpacityButton
 
 @Composable
 fun BackButton(activityActions: GalleryActivity.Actions){

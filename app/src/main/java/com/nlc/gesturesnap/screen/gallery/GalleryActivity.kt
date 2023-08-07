@@ -10,15 +10,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.lifecycle.ViewModelProvider
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.helper.MediaHelper
+import com.nlc.gesturesnap.model.PhotoInfo
 import com.nlc.gesturesnap.screen.gallery.model.Photo
-import com.nlc.gesturesnap.screen.gallery.ui.ScreenContent
+import com.nlc.gesturesnap.screen.gallery.ui.GalleryActivityComposeScreen
 import com.nlc.gesturesnap.screen.gallery.view_model.GalleryViewModel
+import com.nlc.gesturesnap.screen.photo_display.PhotoDisplayFragment
 
-class GalleryActivity : ComponentActivity() {
+class GalleryActivity : AppCompatActivity() {
 
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,7 +40,7 @@ class GalleryActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
-                ScreenContent(actions)
+                GalleryActivityComposeScreen(actions, supportFragmentManager)
             }
         }
 

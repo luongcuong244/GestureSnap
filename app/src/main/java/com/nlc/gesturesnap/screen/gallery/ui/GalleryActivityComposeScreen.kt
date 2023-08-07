@@ -19,19 +19,21 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.screen.gallery.GalleryActivity
 import com.nlc.gesturesnap.screen.gallery.ui.component.BackButton
 import com.nlc.gesturesnap.screen.gallery.ui.component.BottomBar
 import com.nlc.gesturesnap.screen.gallery.ui.component.ChoiceButton
+import com.nlc.gesturesnap.screen.gallery.ui.component.PhotoDisplayFragmentView
 import com.nlc.gesturesnap.screen.gallery.ui.component.PhotosList
 import com.nlc.gesturesnap.screen.gallery.view_model.GalleryViewModel
 
 val bottomBarHeight = 50.dp
 
 @Composable
-fun ScreenContent(activityActions: GalleryActivity.Actions, galleryViewModel: GalleryViewModel = viewModel()){
+fun GalleryActivityComposeScreen(activityActions: GalleryActivity.Actions, fragmentManager: FragmentManager, galleryViewModel: GalleryViewModel = viewModel()){
 
     val bottomBarTranslationValue by animateDpAsState(
         targetValue = if(galleryViewModel.isSelectable.value) 0.dp else bottomBarHeight,
@@ -50,11 +52,12 @@ fun ScreenContent(activityActions: GalleryActivity.Actions, galleryViewModel: Ga
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                PhotosList(bottomBarTranslationValue)
+                PhotosList(activityActions, bottomBarTranslationValue)
                 BottomBar(activityActions, bottomBarTranslationValue)
             }
             OverlayBackground()
             Header(activityActions)
+            PhotoDisplayFragmentView(fragmentManager)
         }
     }
 }

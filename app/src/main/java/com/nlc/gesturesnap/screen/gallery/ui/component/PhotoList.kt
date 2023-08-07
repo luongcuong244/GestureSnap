@@ -1,5 +1,6 @@
 package com.nlc.gesturesnap.screen.gallery.ui.component
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,22 +25,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.model.PhotoInfo
+import com.nlc.gesturesnap.screen.gallery.GalleryActivity
 import com.nlc.gesturesnap.screen.gallery.model.Photo
 import com.nlc.gesturesnap.screen.gallery.ui.bottomBarHeight
 import com.nlc.gesturesnap.screen.gallery.view_model.GalleryViewModel
 import java.io.File
 
 @Composable
-fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()){
+fun PhotosList(activityActions: GalleryActivity.Actions, offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()){
 
     val listState = rememberLazyGridState()
 
@@ -63,25 +70,30 @@ fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()
                 photo.path
             }
         ) {
-            PhotoItem(photo = it)
+            PhotoItem(activityActions, photo = it)
         }
     }
 }
 
 @Composable
-fun PhotoItem(photo: Photo, galleryViewModel: GalleryViewModel = viewModel()){
+fun PhotoItem(activityActions: GalleryActivity.Actions, photo: Photo, galleryViewModel: GalleryViewModel = viewModel()){
 
     val imageBitmap = rememberAsyncImagePainter(model = File(photo.path))
 
     val isSelectingState = remember { mutableStateOf(photo.isSelecting) }
 
-    val onClick = {
+    val sizePhotoItem = remember { mutableStateOf(IntSize.Zero) }
+    val positionInRootPhotoItem = remember { mutableStateOf(Offset.Zero) }
+
+    val onClick : () -> Unit = {
         if(galleryViewModel.isSelectable.value){
             val addedValue = if(photo.isSelecting) -1 else 1
             galleryViewModel.setSelectedItemsCount(galleryViewModel.selectedItemsCount.value + addedValue)
 
             photo.isSelecting = !photo.isSelecting
             isSelectingState.value = photo.isSelecting // refresh UI
+        } else {
+            galleryViewModel.setShownPhotoInfo(photo as PhotoInfo)
         }
     }
 
@@ -99,6 +111,10 @@ fun PhotoItem(photo: Photo, galleryViewModel: GalleryViewModel = viewModel()){
         modifier = Modifier
             .background(Color.Gray)
             .aspectRatio(1f)
+            .onGloballyPositioned {
+                sizePhotoItem.value = it.size
+                positionInRootPhotoItem.value = it.positionInRoot()
+            }
     ) {
         Box(modifier = Modifier.fillMaxSize()){
             Image(

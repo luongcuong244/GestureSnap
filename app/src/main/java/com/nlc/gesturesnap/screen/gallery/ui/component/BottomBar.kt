@@ -29,7 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.screen.gallery.GalleryActivity
 import com.nlc.gesturesnap.screen.gallery.ui.bottomBarHeight
-import com.nlc.gesturesnap.screen.gallery.ui.custom_widget.TouchableOpacityButton
+import com.nlc.gesturesnap.jetpack_compose.custom_widget.TouchableOpacityButton
 import com.nlc.gesturesnap.screen.gallery.view_model.GalleryViewModel
 
 @Composable

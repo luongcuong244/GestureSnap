@@ -1,8 +1,10 @@
 package com.nlc.gesturesnap.screen.gallery.view_model
 
+import android.net.Uri
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.nlc.gesturesnap.model.PhotoInfo
 import com.nlc.gesturesnap.screen.gallery.model.Photo
 
 class GalleryViewModel : ViewModel() {
@@ -11,6 +13,8 @@ class GalleryViewModel : ViewModel() {
     val selectedItemsText = mutableStateOf("Select Items")
     val isSelectable = mutableStateOf(false)
     val selectedItemsCount = mutableStateOf(0)
+
+    val shownPhotoInfo = mutableStateOf(PhotoInfo("", Uri.EMPTY))
 
     fun setPhotos(photos: List<Photo>){
         this.photos.clear()
@@ -43,5 +47,9 @@ class GalleryViewModel : ViewModel() {
         }
 
         selectedItemsText.value = "$value Photos Selected"
+    }
+
+    fun setShownPhotoInfo(photoInfo: PhotoInfo){
+        shownPhotoInfo.value = photoInfo
     }
 }
