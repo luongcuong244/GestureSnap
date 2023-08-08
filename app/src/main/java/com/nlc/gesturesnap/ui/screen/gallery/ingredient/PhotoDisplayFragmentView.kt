@@ -26,8 +26,15 @@ fun PhotoDisplayFragmentView(
                 }
             },
             update = {
+
+                val argument = PhotoDisplayFragment.Argument(
+                    galleryViewModel.shownPhotoSize.value,
+                    galleryViewModel.shownPhotoPosition.value,
+                    galleryViewModel.shownPhoto.value
+                )
+
                 fragmentManager.beginTransaction()
-                    .replace(it.id, PhotoDisplayFragment.newInstance(galleryViewModel.shownPhoto.value))
+                    .replace(it.id, PhotoDisplayFragment.newInstance(argument))
                     .commit()
             }
         )
