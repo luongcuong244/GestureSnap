@@ -1,7 +1,6 @@
 package com.nlc.gesturesnap.ui.screen.photo_display.ingredient
 
 import android.graphics.BitmapFactory
-import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntOffsetAsState
@@ -28,7 +27,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
-import com.nlc.gesturesnap.helper.Constant
+import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.view_model.photo_display.PhotoDisplayViewModel
 import java.io.File
 import kotlin.math.roundToInt
@@ -87,7 +86,7 @@ fun BoxScope.Photo(screenSizePx: IntSize, photoDisplayViewModel: PhotoDisplayVie
             photoRatio.value
         else
             photoDisplayViewModel.fragmentArgument.value.initialPhotoSize.width / photoDisplayViewModel.fragmentArgument.value.initialPhotoSize.height,
-        animationSpec = tween(durationMillis = Constant.ANIMATION_DURATION_MILLIS),
+        animationSpec = tween(durationMillis = AppConstant.ANIMATION_DURATION_MILLIS),
         label = "",
     )
 
@@ -96,7 +95,7 @@ fun BoxScope.Photo(screenSizePx: IntSize, photoDisplayViewModel: PhotoDisplayVie
             if(isFragmentOpen.value) screenWidthDp else photoDisplayViewModel.fragmentArgument.value.initialPhotoSize.width
         else
             if(isFragmentOpen.value) screenHeightDp else photoDisplayViewModel.fragmentArgument.value.initialPhotoSize.height,
-        animationSpec = tween(durationMillis = Constant.ANIMATION_DURATION_MILLIS),
+        animationSpec = tween(durationMillis = AppConstant.ANIMATION_DURATION_MILLIS),
         label = "",
     )
 
@@ -106,7 +105,7 @@ fun BoxScope.Photo(screenSizePx: IntSize, photoDisplayViewModel: PhotoDisplayVie
                 IntOffset.Zero
             else
                 expectedOffset,
-        animationSpec = tween(durationMillis = Constant.ANIMATION_DURATION_MILLIS),
+        animationSpec = tween(durationMillis = AppConstant.ANIMATION_DURATION_MILLIS),
         label = ""
     )
 

@@ -1,4 +1,4 @@
-package com.nlc.gesturesnap.ui.widget
+package com.nlc.gesturesnap.ui.component
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.gestures.detectTapGestures

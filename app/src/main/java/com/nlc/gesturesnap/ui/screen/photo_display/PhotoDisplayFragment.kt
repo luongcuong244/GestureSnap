@@ -2,14 +2,11 @@ package com.nlc.gesturesnap.ui.screen.photo_display
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -23,30 +20,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toOffset
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.model.PhotoInfo
-import com.nlc.gesturesnap.helper.Constant
+import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Background
+import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.BottomBar
+import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Header
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Photo
 import com.nlc.gesturesnap.view_model.photo_display.PhotoDisplayViewModel
 import java.io.Serializable
-import kotlin.math.roundToInt
 
 class PhotoDisplayFragment : Fragment() {
 
@@ -121,23 +111,19 @@ fun PhotoDisplayComposeScreen(){
             if(screenSizePx.value != IntSize.Zero){
                 Photo(screenSizePx.value)
             }
-            Box(
-                Modifier.fillMaxSize()
-            ) {
-
-            }
+            ViewContainer()
         }
     }
 }
 
 @Composable
-fun Background(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
+fun ViewContainer(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
 
     val isFragmentOpen = remember { mutableStateOf(false) }
 
     val alpha by animateFloatAsState(
         targetValue = if(isFragmentOpen.value) 1f else 0f,
-        animationSpec = tween(durationMillis = Constant.ANIMATION_DURATION_MILLIS),
+        animationSpec = tween(durationMillis = AppConstant.ANIMATION_DURATION_MILLIS),
         label = "",
     )
 
@@ -146,22 +132,11 @@ fun Background(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
     }
 
     Box(
-        modifier = Modifier
+        Modifier
             .fillMaxSize()
             .alpha(alpha)
-    ){
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(colorResource(R.color.white))
-        )
-    }
-}
-
-@Preview
-@Composable
-fun Preview(){
-    MaterialTheme {
-        PhotoDisplayComposeScreen()
+    ) {
+        Header()
+        BottomBar()
     }
 }

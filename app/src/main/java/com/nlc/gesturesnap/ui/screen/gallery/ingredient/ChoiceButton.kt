@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.view_model.gallery.GalleryViewModel
 
 @Composable
@@ -44,7 +45,7 @@ fun ChoiceButton(galleryViewModel: GalleryViewModel = viewModel()){
             modifier = Modifier
                 .padding(top = 3.dp),
             fontFamily = FontFamily(Font(R.font.poppins_semibold)),
-            fontSize = 14.sp
+            fontSize = AppConstant.TEXT_BUTTON_FONT_SIZE
         )
     }
 }

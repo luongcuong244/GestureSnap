@@ -23,9 +23,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.nlc.gesturesnap.R
-import com.nlc.gesturesnap.ui.widget.TouchableOpacityButton
+import com.nlc.gesturesnap.helper.AppConstant
 
 @Composable
 fun PhotoDeletionDialog(
@@ -54,7 +53,7 @@ fun PhotoDeletionDialog(
             Text(
                 text = stringResource(R.string.photo_deletion_dialog_title),
                 fontFamily = FontFamily(Font(R.font.poppins_semibold)),
-                fontSize = 18.sp,
+                fontSize = AppConstant.TITLE_FONT_SIZE,
             )
             Divider(
                 thickness = 0.5.dp,
@@ -82,7 +81,7 @@ fun PhotoDeletionDialog(
                     Text(
                         text = stringResource(R.string.cancel),
                         fontFamily = FontFamily(Font(R.font.poppins_regular)),
-                        fontSize = 14.sp,
+                        fontSize = AppConstant.TEXT_BUTTON_FONT_SIZE,
                         modifier = Modifier
                             .align(Alignment.Center)
                             .padding(top = 3.dp),
@@ -102,7 +101,7 @@ fun PhotoDeletionDialog(
                     Text(
                         text = stringResource(R.string.delete),
                         fontFamily = FontFamily(Font(R.font.poppins_regular)),
-                        fontSize = 14.sp,
+                        fontSize = AppConstant.TEXT_BUTTON_FONT_SIZE,
                         modifier = Modifier
                             .align(Alignment.Center)
                             .padding(top = 3.dp),
