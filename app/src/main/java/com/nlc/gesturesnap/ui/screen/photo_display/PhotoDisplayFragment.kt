@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.helper.AppConstant
@@ -36,6 +38,13 @@ import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.BottomBar
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Header
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Photo
 import com.nlc.gesturesnap.view_model.photo_display.PhotoDisplayViewModel
+import com.nlc.gesturesnap.view_model.shared.PhotoDisplayFragmentStateViewModel
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.Serializable
 
 class PhotoDisplayFragment : Fragment() {
@@ -64,18 +73,39 @@ class PhotoDisplayFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
+        val argument = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getSerializable(ARGUMENT_KEY, Argument :: class.java)
+        } else {
+            arguments?.getSerializable(ARGUMENT_KEY) as Argument
+        } ?: Argument()
+
         val photoDisplayViewModel =
             ViewModelProvider(this)[PhotoDisplayViewModel::class.java]
 
-        photoDisplayViewModel.setFragmentArgument(
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                arguments?.getSerializable(ARGUMENT_KEY, Argument :: class.java)
-            } else {
-                arguments?.getSerializable(ARGUMENT_KEY) as Argument
-            } ?: Argument()
-        )
+        photoDisplayViewModel.setFragmentArgument(argument)
 
         photoDisplayViewModel.setIsFragmentOpen(true)
+
+        photoDisplayViewModel.isFragmentOpen.observe(requireActivity()) {
+            if(!it){
+                CoroutineScope(Dispatchers.IO).launch {
+
+                    delay(AppConstant.ANIMATION_DURATION_MILLIS.toLong()) // wait the animation done
+
+                    withContext(Dispatchers.Main) {
+                        val fragmentStateViewModel =
+                            ViewModelProvider(this@PhotoDisplayFragment.requireActivity())[PhotoDisplayFragmentStateViewModel::class.java]
+                        fragmentStateViewModel.setState(PhotoDisplayFragmentStateViewModel.State.PREPARE_CLOSE)
+
+                        delay(100) // delay before close the fragment ( wait until the photo of the gridview is shown )
+
+                        this@PhotoDisplayFragment.closeFragment()
+                        photoDisplayViewModel.setFragmentArgument(Argument()) // reset
+                        fragmentStateViewModel.setState(PhotoDisplayFragmentStateViewModel.State.CLOSED)
+                    }
+                }
+            }
+        }
 
         return ComposeView(requireContext()).apply {
             setContent {
@@ -86,6 +116,12 @@ class PhotoDisplayFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun closeFragment(){
+        val fragmentTransaction: FragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
+        fragmentTransaction.remove(this)
+        fragmentTransaction.commit()
     }
 }
 
@@ -127,8 +163,10 @@ fun ViewContainer(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
         label = "",
     )
 
-    LaunchedEffect(photoDisplayViewModel.isFragmentOpen.value){
-        isFragmentOpen.value = photoDisplayViewModel.isFragmentOpen.value
+    LaunchedEffect(photoDisplayViewModel.isFragmentOpen.observeAsState(false).value){
+        photoDisplayViewModel.isFragmentOpen.value?.let {
+            isFragmentOpen.value = it
+        }
     }
 
     Box(

@@ -43,6 +43,7 @@ import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.model.PhotoInfo
 import com.nlc.gesturesnap.model.SelectablePhoto
 import com.nlc.gesturesnap.ui.screen.gallery.bottomBarHeight
+import com.nlc.gesturesnap.ui.screen.photo_display.PhotoDisplayFragment
 import com.nlc.gesturesnap.view_model.gallery.GalleryViewModel
 import kotlinx.coroutines.delay
 import java.io.File
@@ -99,10 +100,15 @@ fun PhotoItem(photo: SelectablePhoto, galleryViewModel: GalleryViewModel = viewM
             photo.isSelecting = !photo.isSelecting
             isSelectingState.value = photo.isSelecting // refresh UI
         } else {
-            galleryViewModel.setShownPhotoPosition(positionInRootPhotoItem.value)
-            galleryViewModel.setShownPhotoSize(sizePhotoItem.value)
+            galleryViewModel.setFragmentArgument(
+                PhotoDisplayFragment.Argument(
+                    sizePhotoItem.value,
+                    positionInRootPhotoItem.value,
+                    photo as PhotoInfo
+                )
+            )
 
-            galleryViewModel.setShownPhotoInfo(photo as PhotoInfo)
+            galleryViewModel.setIsPhotoDisplayFragmentViewVisible(true)
         }
     }
 
@@ -116,9 +122,12 @@ fun PhotoItem(photo: SelectablePhoto, galleryViewModel: GalleryViewModel = viewM
         mutableStateOf(1f)
     }
 
-    LaunchedEffect(galleryViewModel.shownPhoto.value){
-        if(galleryViewModel.shownPhoto.value.path == photo.path){
-            delay(100)
+    LaunchedEffect(galleryViewModel.fragmentArgument.value){
+
+        val path = galleryViewModel.fragmentArgument.value.photo.path
+
+        if(path == photo.path){
+            delay(100) // for fragment initialization
             alpha.value = 0f
         } else {
             alpha.value = 1f

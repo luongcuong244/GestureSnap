@@ -16,7 +16,7 @@ fun PhotoDisplayFragmentView(
     fragmentManager: FragmentManager,
     galleryViewModel: GalleryViewModel = viewModel()
 ) {
-    if(galleryViewModel.shownPhoto.value.path.isNotEmpty()){
+    if(galleryViewModel.isPhotoDisplayFragmentViewVisible.value){
         AndroidView(
             modifier = Modifier
                 .fillMaxSize(),
@@ -26,16 +26,11 @@ fun PhotoDisplayFragmentView(
                 }
             },
             update = {
-
-                val argument = PhotoDisplayFragment.Argument(
-                    galleryViewModel.shownPhotoSize.value,
-                    galleryViewModel.shownPhotoPosition.value,
-                    galleryViewModel.shownPhoto.value
-                )
-
-                fragmentManager.beginTransaction()
-                    .replace(it.id, PhotoDisplayFragment.newInstance(argument))
-                    .commit()
+                if(galleryViewModel.fragmentArgument.value.photo.path.isNotEmpty()){
+                    fragmentManager.beginTransaction()
+                        .replace(it.id, PhotoDisplayFragment.newInstance(galleryViewModel.fragmentArgument.value))
+                        .commit()
+                }
             }
         )
     }

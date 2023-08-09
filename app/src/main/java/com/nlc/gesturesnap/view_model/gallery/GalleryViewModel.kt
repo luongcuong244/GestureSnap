@@ -1,13 +1,10 @@
 package com.nlc.gesturesnap.view_model.gallery
 
-import android.net.Uri
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.DpSize
 import androidx.lifecycle.ViewModel
-import com.nlc.gesturesnap.model.PhotoInfo
 import com.nlc.gesturesnap.model.SelectablePhoto
+import com.nlc.gesturesnap.ui.screen.photo_display.PhotoDisplayFragment
 
 class GalleryViewModel : ViewModel() {
 
@@ -19,9 +16,8 @@ class GalleryViewModel : ViewModel() {
 
     val isPhotoDeletionDialogVisible = mutableStateOf(false)
 
-    val shownPhoto = mutableStateOf(PhotoInfo("", Uri.EMPTY))
-    val shownPhotoPosition = mutableStateOf(Offset.Zero)
-    val shownPhotoSize = mutableStateOf(DpSize.Zero)
+    val isPhotoDisplayFragmentViewVisible = mutableStateOf(false)
+    val fragmentArgument = mutableStateOf(PhotoDisplayFragment.Argument())
 
     fun setPhotos(photos: List<SelectablePhoto>){
         this.photos.clear()
@@ -60,15 +56,11 @@ class GalleryViewModel : ViewModel() {
         isPhotoDeletionDialogVisible.value = visible
     }
 
-    fun setShownPhotoInfo(photoInfo: PhotoInfo){
-        shownPhoto.value = photoInfo
+    fun setIsPhotoDisplayFragmentViewVisible(visible: Boolean){
+        isPhotoDisplayFragmentViewVisible.value = visible
     }
 
-    fun setShownPhotoPosition(positionInRoot : Offset){
-        shownPhotoPosition.value = positionInRoot
-    }
-
-    fun setShownPhotoSize(size : DpSize){
-        shownPhotoSize.value = size
+    fun setFragmentArgument(argument: PhotoDisplayFragment.Argument){
+        fragmentArgument.value = argument
     }
 }

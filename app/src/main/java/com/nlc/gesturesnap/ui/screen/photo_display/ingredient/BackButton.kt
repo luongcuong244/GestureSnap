@@ -11,15 +11,17 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.ui.component.TouchableOpacityButton
+import com.nlc.gesturesnap.view_model.photo_display.PhotoDisplayViewModel
 
 @Composable
-fun BoxScope.BackButton(){
+fun BoxScope.BackButton(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
     TouchableOpacityButton(
         modifier = Modifier.align(Alignment.CenterStart),
         onClick = {
-
+            photoDisplayViewModel.setIsFragmentOpen(false)
         }
     ) {
         Image(

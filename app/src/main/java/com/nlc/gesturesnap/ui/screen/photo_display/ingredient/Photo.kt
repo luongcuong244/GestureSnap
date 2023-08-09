@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -109,8 +110,10 @@ fun BoxScope.Photo(screenSizePx: IntSize, photoDisplayViewModel: PhotoDisplayVie
         label = ""
     )
 
-    LaunchedEffect(photoDisplayViewModel.isFragmentOpen.value){
-        isFragmentOpen.value = photoDisplayViewModel.isFragmentOpen.value
+    LaunchedEffect(photoDisplayViewModel.isFragmentOpen.observeAsState(false).value){
+        photoDisplayViewModel.isFragmentOpen.value?.let {
+            isFragmentOpen.value = it
+        }
     }
 
     Image(

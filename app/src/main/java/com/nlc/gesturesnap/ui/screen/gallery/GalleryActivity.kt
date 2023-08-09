@@ -46,7 +46,9 @@ import com.nlc.gesturesnap.ui.screen.gallery.ingredient.BottomBar
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.ChoiceButton
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.PhotoDisplayFragmentView
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.PhotosList
+import com.nlc.gesturesnap.ui.screen.photo_display.PhotoDisplayFragment
 import com.nlc.gesturesnap.view_model.gallery.GalleryViewModel
+import com.nlc.gesturesnap.view_model.shared.PhotoDisplayFragmentStateViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -70,6 +72,19 @@ class GalleryActivity : AppCompatActivity() {
             ViewModelProvider(this@GalleryActivity)[GalleryViewModel::class.java]
 
         galleryViewModel.setPhotos(allPhotos)
+
+        val photoDisplayFragmentStateViewModel =
+            ViewModelProvider(this@GalleryActivity)[PhotoDisplayFragmentStateViewModel::class.java]
+
+        photoDisplayFragmentStateViewModel.photoDisplayFragmentState.observe(this) {
+            if(it == PhotoDisplayFragmentStateViewModel.State.PREPARE_CLOSE){
+                galleryViewModel.setFragmentArgument(PhotoDisplayFragment.Argument())
+            }
+
+            if(it == PhotoDisplayFragmentStateViewModel.State.CLOSED){
+                galleryViewModel.setIsPhotoDisplayFragmentViewVisible(false)
+            }
+        }
 
         val actions = Actions()
 
