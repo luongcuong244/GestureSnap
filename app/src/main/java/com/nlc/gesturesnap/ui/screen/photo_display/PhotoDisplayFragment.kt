@@ -36,6 +36,7 @@ import com.nlc.gesturesnap.model.PhotoInfo
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Background
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.BottomBar
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Header
+import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.InteractiveView
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Photo
 import com.nlc.gesturesnap.view_model.photo_display.PhotoDisplayViewModel
 import com.nlc.gesturesnap.view_model.shared.PhotoDisplayFragmentStateViewModel
@@ -128,10 +129,6 @@ class PhotoDisplayFragment : Fragment() {
 @Composable
 fun PhotoDisplayComposeScreen(){
 
-    val screenSizePx = remember {
-        mutableStateOf(IntSize.Zero)
-    }
-
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.Transparent
@@ -139,14 +136,8 @@ fun PhotoDisplayComposeScreen(){
         Box(
             Modifier
                 .fillMaxSize()
-                .onGloballyPositioned {
-                    screenSizePx.value = it.size
-                }
         ) {
-            Background()
-            if(screenSizePx.value != IntSize.Zero){
-                Photo(screenSizePx.value)
-            }
+            InteractiveView()
             ViewContainer()
         }
     }
@@ -169,12 +160,14 @@ fun ViewContainer(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
         }
     }
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .alpha(alpha)
-    ) {
-        Header()
-        BottomBar()
+    if(!photoDisplayViewModel.isOnlyDisplayPhoto.value){
+        Box(
+            Modifier
+                .fillMaxSize()
+                .alpha(alpha)
+        ) {
+            Header()
+            BottomBar()
+        }
     }
 }

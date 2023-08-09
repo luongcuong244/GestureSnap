@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.R
@@ -36,6 +37,11 @@ fun Background(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
         }
     }
 
+    val backgroundColor =
+        if(photoDisplayViewModel.isOnlyDisplayPhoto.value)
+            Color.Black
+        else Color.White
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -44,7 +50,7 @@ fun Background(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(colorResource(R.color.white))
+                .background(backgroundColor)
         )
     }
 }

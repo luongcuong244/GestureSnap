@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.nlc.gesturesnap.R
@@ -27,6 +28,7 @@ fun BoxScope.BottomBar(){
             .height(bottomBarHeight)
             .align(Alignment.BottomEnd)
             .background(color = colorResource(R.color.gray_white))
+            .pointerInput(Unit) {}
             .drawBehind {
                 val strokeWidth = 2f
 
