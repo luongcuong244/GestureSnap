@@ -1,16 +1,20 @@
 package com.nlc.gesturesnap.view_model.capture
 
+import android.app.Application
 import android.content.Context
 import android.os.CountDownTimer
+import android.util.Log
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.helper.AppConstant
+import com.nlc.gesturesnap.helper.LocalStorageHelper
 import com.nlc.gesturesnap.model.GestureDetectOption
 import com.nlc.gesturesnap.model.enums.GestureCategory
 
-class GestureDetectViewModel : ViewModel() {
+class GestureDetectViewModel(application: Application) : AndroidViewModel(application) {
 
     val HAND_DETECTING_TIME_IN_MILLI = 3000L
 
@@ -18,7 +22,7 @@ class GestureDetectViewModel : ViewModel() {
     private var _isDetecting : Boolean = false
 
     private val _currentHandGesture = MutableLiveData<GestureDetectOption>()
-    private val _isDrawHand = MutableLiveData<Boolean>().apply {
+    private val _isDrawHandTrackingLine = MutableLiveData<Boolean>().apply {
         value = false
     }
     private val _handGestureProgress = MutableLiveData<Int>().apply {
@@ -30,7 +34,7 @@ class GestureDetectViewModel : ViewModel() {
 
     val handGestureOptions = MutableLiveData<List<GestureDetectOption>>()
     val currentHandGesture : LiveData<GestureDetectOption> = _currentHandGesture
-    val isDrawHand : LiveData<Boolean> = _isDrawHand
+    val isDrawHandTrackingLine : LiveData<Boolean> = _isDrawHandTrackingLine
     val handGestureProgress: LiveData<Int> = _handGestureProgress
     val timerTrigger : LiveData<Boolean> = _timerTrigger
 
@@ -129,8 +133,20 @@ class GestureDetectViewModel : ViewModel() {
         _currentHandGesture.value = handGestureOptions.value?.get(index)
     }
 
-    fun switchIsDrawHandValue(){
-        _isDrawHand.value = !isDrawHand.value!!
+    fun switchAndSaveIsDrawHandTrackingLineValue(){
+        val newValue = !(isDrawHandTrackingLine.value ?: false)
+        setAndSaveIsDrawHandTrackingLineValue(newValue)
+    }
+
+    fun setAndSaveIsDrawHandTrackingLineValue(newValue: Boolean){
+
+        _isDrawHandTrackingLine.value = newValue
+
+        LocalStorageHelper.writeData(
+            getApplication(),
+            AppConstant.HAND_TRACKING_MODE_VALUE_KEY,
+            newValue
+        )
     }
 
     fun startTimer(){

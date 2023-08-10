@@ -20,12 +20,17 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.databinding.ActivityCaptureBinding
+import com.nlc.gesturesnap.helper.AppConstant
+import com.nlc.gesturesnap.helper.LocalStorageHelper
 import com.nlc.gesturesnap.helper.MediaHelper
 import com.nlc.gesturesnap.helper.OrientationLiveData
 import com.nlc.gesturesnap.helper.PermissionHelper
 import com.nlc.gesturesnap.ui.screen.capture.animation.AnimationHandler
 import com.nlc.gesturesnap.ui.screen.capture.component.GestureDetectAdapter
 import com.nlc.gesturesnap.model.enums.CameraOption
+import com.nlc.gesturesnap.model.enums.CameraOrientation
+import com.nlc.gesturesnap.model.enums.FlashOption
+import com.nlc.gesturesnap.model.enums.TimerOption
 import com.nlc.gesturesnap.ui.screen.capture.view.CameraFragment
 import com.nlc.gesturesnap.ui.screen.gallery.GalleryActivity
 import com.nlc.gesturesnap.view_model.capture.CameraModeViewModel
@@ -85,6 +90,8 @@ class CaptureActivity : AppCompatActivity() {
 
     private lateinit var animationHandler: AnimationHandler
 
+    private val cameraFragment = CameraFragment()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -95,7 +102,11 @@ class CaptureActivity : AppCompatActivity() {
 
         binding.lifecycleOwner = this
 
-        val cameraFragment = CameraFragment()
+        setupPermissionViewModel()
+        setupTimerViewModel()
+        setupGestureDetectViewModel()
+        setupCameraModeViewModel()
+        setupRecentPhotoViewModel()
 
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, cameraFragment)
@@ -110,12 +121,6 @@ class CaptureActivity : AppCompatActivity() {
                 gestureDetectAdapter?.setItemRotationValue(-orientation)
             }
         }
-
-        setupPermissionViewModel()
-        setupTimerViewModel()
-        setupGestureDetectViewModel()
-        setupCameraModeViewModel()
-        setupRecentPhotoViewModel()
     }
 
     private fun setupPermissionViewModel(){
@@ -156,6 +161,11 @@ class CaptureActivity : AppCompatActivity() {
 
         binding.timerViewModel = timerViewModel
 
+        val storedIndex = (LocalStorageHelper.readData(this, AppConstant.TIMER_MODE_INDEX_KEY) as Int?) ?: 0
+        timerViewModel.setAndSaveTimerOption(
+            TimerOption.values()[storedIndex]
+        )
+
         timerViewModel.timerOption.observe(this) {
             binding.timerButton.setImageDrawable(ContextCompat.getDrawable(this, it.icon))
         }
@@ -167,12 +177,17 @@ class CaptureActivity : AppCompatActivity() {
 
         binding.gestureDetectViewModel = gestureDetectViewModel
 
+        val storedIsDrawHandTrackingLineValue = (LocalStorageHelper.readData(this, AppConstant.HAND_TRACKING_MODE_VALUE_KEY) as Boolean?) ?: false
+        gestureDetectViewModel.setAndSaveIsDrawHandTrackingLineValue(storedIsDrawHandTrackingLineValue)
+
         gestureDetectViewModel.handGestureOptions.observe(this) {
 
             val layoutManager =
                 LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
-            gestureDetectAdapter = GestureDetectAdapter(binding.recyclerGestureDetect ,this, it) { index ->
+            val initPosition = (LocalStorageHelper.readData(this, AppConstant.GESTURE_OPTION_INDEX_KEY) as Int?) ?: 0
+
+            gestureDetectAdapter = GestureDetectAdapter(binding.recyclerGestureDetect ,this, it, initPosition) { index ->
                 gestureDetectViewModel.setCurrentHandGesture(index)
             }
 
@@ -186,8 +201,6 @@ class CaptureActivity : AppCompatActivity() {
             gestureDetectAdapter?.updateItem(it)
         }
 
-        gestureDetectViewModel.setCurrentHandGesture(0)
-
         gestureDetectViewModel.timerTrigger.observe(this) {
             binding.timerViewModel?.startTimer()
         }
@@ -198,6 +211,20 @@ class CaptureActivity : AppCompatActivity() {
             ViewModelProvider(this)[CameraModeViewModel::class.java]
 
         binding.cameraModeViewModel = cameraModeViewModel
+
+        val storedGridModeValue = (LocalStorageHelper.readData(this, AppConstant.GRID_MODE_VALUE_KEY) as Boolean?) ?: false
+        cameraModeViewModel.setAndSaveGridMode(storedGridModeValue)
+
+        val storedCameraOrientationIndex = (LocalStorageHelper.readData(this, AppConstant.CAMERA_ORIENTATION_INDEX_KEY) as Int?) ?: 0
+        cameraModeViewModel.setAndSaveCameraOrientation(CameraOrientation.values()[storedCameraOrientationIndex])
+
+        val storedFlashModeIndex = (LocalStorageHelper.readData(this, AppConstant.FLASH_MODE_INDEX_KEY) as Int?) ?: 0
+        cameraModeViewModel.setAndSaveFlashMode(
+            FlashOption.values()[storedFlashModeIndex]
+        )
+
+        val storedCameraAspectRatioValue = (LocalStorageHelper.readData(this, AppConstant.ASPECT_RATIO_MODE_VALUE_KEY) as Int?) ?: 0
+        cameraModeViewModel.setAndSaveAspectRatio(storedCameraAspectRatioValue)
 
         cameraModeViewModel.flashOption.observe(this) {
             binding.flashButton.setImageDrawable(ContextCompat.getDrawable(this, it.icon))

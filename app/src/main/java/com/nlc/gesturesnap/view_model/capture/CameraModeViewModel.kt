@@ -1,26 +1,21 @@
 package com.nlc.gesturesnap.view_model.capture
 
+import android.app.Application
 import androidx.camera.core.AspectRatio
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import com.nlc.gesturesnap.helper.AppConstant
+import com.nlc.gesturesnap.helper.LocalStorageHelper
 import com.nlc.gesturesnap.model.enums.CameraOrientation
 import com.nlc.gesturesnap.model.enums.FlashOption
 
-class CameraModeViewModel : ViewModel() {
+class CameraModeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _cameraAspectRatio = MutableLiveData<Int>().apply {
-        this.value = AspectRatio.RATIO_16_9
-    }
-    private val _flashOption = MutableLiveData<FlashOption>().apply {
-        value = FlashOption.AUTO
-    }
-    private val _isOpenGrid = MutableLiveData<Boolean>().apply {
-        value = false
-    }
-    private val _cameraOrientation = MutableLiveData<CameraOrientation>().apply {
-        value = CameraOrientation.FRONT
-    }
+    private val _cameraAspectRatio = MutableLiveData<Int>()
+    private val _flashOption = MutableLiveData<FlashOption>()
+    private val _isOpenGrid = MutableLiveData<Boolean>()
+    private val _cameraOrientation = MutableLiveData<CameraOrientation>()
 
     private var shouldRefreshCamera = true
 
@@ -29,20 +24,31 @@ class CameraModeViewModel : ViewModel() {
     val isOpenGrid : LiveData<Boolean> = _isOpenGrid
     val cameraOrientation: LiveData<CameraOrientation> = _cameraOrientation
 
-    fun switchAspectRatio(){
+    fun switchAndSaveAspectRatio(){
         if(!shouldRefreshCamera){
             return
         }
         shouldRefreshCamera = false
 
         if(_cameraAspectRatio.value == AspectRatio.RATIO_4_3){
-            _cameraAspectRatio.value = AspectRatio.RATIO_16_9
+            setAndSaveAspectRatio(AspectRatio.RATIO_16_9)
         }else {
-            _cameraAspectRatio.value = AspectRatio.RATIO_4_3
+            setAndSaveAspectRatio(AspectRatio.RATIO_4_3)
         }
     }
 
-    fun switchFlashMode(option : FlashOption){
+    fun setAndSaveAspectRatio(newValue: Int){
+
+        _cameraAspectRatio.value = newValue
+
+        LocalStorageHelper.writeData(
+            getApplication(),
+            AppConstant.ASPECT_RATIO_MODE_VALUE_KEY,
+            newValue
+        )
+    }
+
+    fun setAndSaveFlashMode(option : FlashOption){
         if(!shouldRefreshCamera){
             return
         }
@@ -53,13 +59,31 @@ class CameraModeViewModel : ViewModel() {
         if(!isSelecting){
             _flashOption.value = option
         }
+
+        LocalStorageHelper.writeData(
+            getApplication(),
+            AppConstant.FLASH_MODE_INDEX_KEY,
+            FlashOption.values().indexOf(option)
+        )
     }
 
-    fun switchGridMode(){
-        _isOpenGrid.value = !isOpenGrid.value!!
+    fun switchAndSaveGridMode(){
+        val newValue = !(isOpenGrid.value ?: false)
+        setAndSaveGridMode(newValue)
     }
 
-    fun switchCameraOrientation(){
+    fun setAndSaveGridMode(newValue: Boolean){
+
+        _isOpenGrid.value = newValue
+
+        LocalStorageHelper.writeData(
+            getApplication(),
+            AppConstant.GRID_MODE_VALUE_KEY,
+            newValue
+        )
+    }
+
+    fun switchAndSaveCameraOrientation(){
         if(!shouldRefreshCamera){
             return
         }
@@ -68,7 +92,20 @@ class CameraModeViewModel : ViewModel() {
         val index = CameraOrientation.values().indexOf(cameraOrientation.value)
         val size = CameraOrientation.values().size
 
-        _cameraOrientation.value = CameraOrientation.values()[(index + 1) % size]
+        val newIndex = (index + 1) % size
+
+        setAndSaveCameraOrientation(CameraOrientation.values()[newIndex])
+    }
+
+    fun setAndSaveCameraOrientation(newValue: CameraOrientation){
+
+        _cameraOrientation.value = newValue
+
+        LocalStorageHelper.writeData(
+            getApplication(),
+            AppConstant.CAMERA_ORIENTATION_INDEX_KEY,
+            CameraOrientation.values().indexOf(newValue)
+        )
     }
 
     fun setShouldRefreshCamera(value : Boolean){

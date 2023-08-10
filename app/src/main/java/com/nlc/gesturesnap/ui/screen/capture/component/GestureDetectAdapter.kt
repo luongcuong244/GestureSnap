@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.google.android.flexbox.FlexboxLayout
 import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.helper.AppConstant
+import com.nlc.gesturesnap.helper.LocalStorageHelper
 import com.nlc.gesturesnap.model.GestureDetectOption
 import com.nlc.gesturesnap.model.enums.GestureRecyclerViewItemColor
 import kotlinx.coroutines.*
@@ -21,13 +23,14 @@ class GestureDetectAdapter(
     private val recyclerView: RecyclerView,
     private val mContext: Context,
     private var mOptions: List<GestureDetectOption>,
+    private val initPosition: Int,
     private val callback: (Int) -> Unit
 ) : RecyclerView.Adapter<GestureDetectAdapter.ViewHolder>() {
 
     private var adapterSize = mOptions.count() + 2
 
     private var itemRotationValue: Int = 0
-    private var oldSelectedIndex: Int = 1
+    private var oldSelectedIndex: Int = initPosition
 
     companion object {
         private const val TAG = "GestureDetectAdapter"
@@ -65,12 +68,46 @@ class GestureDetectAdapter(
                         }
                     }
 
-                    scrollToMiddleAndSelect(targetPosition)
+                    scrollToMiddleAndSelectAndSavePosition(targetPosition)
                 }
             }
         })
 
-        moveFirstItemToCenter()
+        moveInitPositionToCenter()
+    }
+
+    private fun moveInitPositionToCenter(){
+        CoroutineScope(Dispatchers.Main).launch {
+            checkReadyToScroll().await()
+
+            val targetPosition = initPosition + 1  // +1 because the first element is empty element
+
+            // when moving to element i, element i + 1 will appear
+            for(i in 1 .. targetPosition){
+                scrollToMiddleAndSelectAndSavePosition(i, false)
+            }
+        }
+    }
+
+    private fun checkReadyToScroll() = CoroutineScope(Dispatchers.IO).async {
+
+        var maxTime = 5000L
+        val delay = 50L
+
+        while (maxTime > 0) {
+            val layoutManager = recyclerView.layoutManager
+            if (layoutManager !is LinearLayoutManager) {
+                return@async
+            }
+
+            if(layoutManager.findViewByPosition(0) != null){
+                return@async
+            }
+
+            maxTime -= delay
+
+            delay(delay)
+        }
     }
 
     fun updateItem(option: GestureDetectOption){
@@ -112,7 +149,7 @@ class GestureDetectAdapter(
         if(position == 0 || position == adapterSize - 1){
             holder.mRootView.alpha = 0F
             holder.mRootView.setOnClickListener {
-                scrollToMiddleAndSelect(if(position == 0) position + 1 else position - 1)
+                scrollToMiddleAndSelectAndSavePosition(if(position == 0) position + 1 else position - 1)
             }
             return
         }
@@ -134,7 +171,7 @@ class GestureDetectAdapter(
         holder.mRootView.rotation = itemRotationValue.toFloat()
 
         holder.mRootView.setOnClickListener {
-            scrollToMiddleAndSelect(position)
+            scrollToMiddleAndSelectAndSavePosition(position)
         }
     }
 
@@ -170,35 +207,7 @@ class GestureDetectAdapter(
         }
     }
 
-    private fun moveFirstItemToCenter(){
-        CoroutineScope(Dispatchers.Main).launch {
-            checkReadyToScroll().await()
-            scrollToMiddleAndSelect(1)
-        }
-    }
-
-    private fun checkReadyToScroll() = CoroutineScope(Dispatchers.Main).async {
-
-        var maxTime = 5000L
-        val delay = 50L
-
-        while (maxTime > 0) {
-            val layoutManager = recyclerView.layoutManager
-            if (layoutManager !is LinearLayoutManager) {
-                return@async
-            }
-
-            if(layoutManager.findViewByPosition(oldSelectedIndex) != null){
-                return@async
-            }
-
-            maxTime -= delay
-
-            delay(delay)
-        }
-    }
-
-    fun scrollToMiddleAndSelect(position: Int) {
+    fun scrollToMiddleAndSelectAndSavePosition(position: Int, moveWithAnimation: Boolean = true) {
         val layoutManager = recyclerView.layoutManager
         if (layoutManager is LinearLayoutManager) {
 
@@ -208,14 +217,29 @@ class GestureDetectAdapter(
             val targetView = layoutManager.findViewByPosition(position)
             targetView?.let {
                 val viewCenterOffset = targetView.width / 2
-                recyclerView.smoothScrollBy(targetView.left - viewCenter + viewCenterOffset, 0)
+                if(moveWithAnimation){
+                    recyclerView.smoothScrollBy(targetView.left - viewCenter + viewCenterOffset, 0)
+                } else {
+                    recyclerView.scrollBy(targetView.left - viewCenter + viewCenterOffset, 0)
+                }
             }
 
-            selectItem(position - 1)
+            val indexInListGestures = position - 1
+
+            selectItem(indexInListGestures)
+            saveIndex(indexInListGestures)
         }
     }
 
     private fun selectItem(position : Int){
         callback(position)
+    }
+
+    private fun saveIndex(index: Int){
+        LocalStorageHelper.writeData(
+            mContext,
+            AppConstant.GESTURE_OPTION_INDEX_KEY,
+            index
+        )
     }
 }

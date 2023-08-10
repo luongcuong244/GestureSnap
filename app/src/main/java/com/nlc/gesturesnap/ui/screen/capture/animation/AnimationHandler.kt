@@ -61,7 +61,7 @@ class AnimationHandler(private val context: Context, private val binding: Activi
                     }
 
                     textView.setOnClickListener {
-                        binding.timerViewModel?.setTimerOption(timerOption)
+                        binding.timerViewModel?.setAndSaveTimerOption(timerOption)
                         binding.substituteItemButton.setImageDrawable(ContextCompat.getDrawable(context, timerOption.icon))
                         hideMenuBar(CameraOption.TIMER_OPTION)
                     }
@@ -98,7 +98,7 @@ class AnimationHandler(private val context: Context, private val binding: Activi
                     }
 
                     textView.setOnClickListener {
-                        binding.cameraModeViewModel?.switchFlashMode(flashOption)
+                        binding.cameraModeViewModel?.setAndSaveFlashMode(flashOption)
                         binding.substituteItemButton.setImageDrawable(ContextCompat.getDrawable(context, flashOption.icon))
                         hideMenuBar(CameraOption.FLASH_OPTION)
                     }

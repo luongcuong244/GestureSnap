@@ -1,21 +1,22 @@
 package com.nlc.gesturesnap.view_model.capture
 
+import android.app.Application
 import android.os.CountDownTimer
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import com.nlc.gesturesnap.helper.AppConstant
+import com.nlc.gesturesnap.helper.LocalStorageHelper
 import com.nlc.gesturesnap.model.enums.TimerOption
 
-class TimerViewModel : ViewModel() {
+class TimerViewModel(application: Application) : AndroidViewModel(application) {
 
     private var _countDownTimer : CountDownTimer? = null
     private val _timerValue = MutableLiveData<Int>().apply {
         value = 0
     }
 
-    private val _timerOption = MutableLiveData<TimerOption>().apply {
-        value = TimerOption.OFF
-    }
+    private val _timerOption = MutableLiveData<TimerOption>()
 
     // if the data of the _photoSavingTrigger changes, the device will take a photo
     private val _photoSavingTrigger = MutableLiveData<Boolean>()
@@ -24,13 +25,18 @@ class TimerViewModel : ViewModel() {
     val timerValue: LiveData<Int> = _timerValue
     val photoSavingTrigger = _photoSavingTrigger
 
-    fun setTimerOption(option: TimerOption){
+    fun setAndSaveTimerOption(option: TimerOption){
         val isSelecting = _timerOption.value?.equals(option) ?: false
         if (!isSelecting){
             _timerOption.value = option
         }
-    }
 
+        LocalStorageHelper.writeData(
+            getApplication(),
+            AppConstant.TIMER_MODE_INDEX_KEY,
+            TimerOption.values().indexOf(option)
+        )
+    }
     fun startTimer(){
 
         // plus one for a delay

@@ -8,6 +8,7 @@
         <import type="com.nlc.gesturesnap.model.enums.GestureCategory"/>
         <import type="androidx.camera.core.AspectRatio"/>
         <import type="com.nlc.gesturesnap.model.enums.CameraOption"/>
+        <import type="com.nlc.gesturesnap.model.enums.TimerOption"/>
         <variable
             name="captureActivity"
             type="com.nlc.gesturesnap.ui.screen.capture.CaptureActivity" />
@@ -137,7 +138,7 @@
                     android:rotation="@{-screenRotation.intValue()}"
                     android:background="@drawable/black_circle"
                     android:src="@{ cameraModeViewModel.isOpenGrid ? @drawable/ic_grid_on : @drawable/ic_grid_off }"
-                    android:onClick="@{() -> cameraModeViewModel.switchGridMode()}">
+                    android:onClick="@{() -> cameraModeViewModel.switchAndSaveGridMode()}">
                 </ImageButton>
 
                 <ImageButton
@@ -147,7 +148,7 @@
                     android:rotation="@{-screenRotation.intValue()}"
                     android:background="@drawable/black_circle"
                     android:src="@{cameraModeViewModel.cameraAspectRatio == AspectRatio.RATIO_4_3 ? @drawable/ic_ratio_4_3 : @drawable/ic_ratio_16_9}"
-                    android:onClick="@{() -> cameraModeViewModel.switchAspectRatio()}">
+                    android:onClick="@{() -> cameraModeViewModel.switchAndSaveAspectRatio()}">
                 </ImageButton>
 
                 <ImageButton
@@ -166,8 +167,8 @@
                     android:layout_height="@dimen/small_button_size"
                     android:rotation="@{-screenRotation.intValue()}"
                     android:background="@drawable/black_circle"
-                    android:src="@{gestureDetectViewModel.isDrawHand ? @drawable/ic_polylines_yellow : @drawable/ic_polylines}"
-                    android:onClick="@{() -> gestureDetectViewModel.switchIsDrawHandValue()}">
+                    android:src="@{gestureDetectViewModel.isDrawHandTrackingLine ? @drawable/ic_polylines_yellow : @drawable/ic_polylines}"
+                    android:onClick="@{() -> gestureDetectViewModel.switchAndSaveIsDrawHandTrackingLineValue()}">
                 </ImageButton>
 
             </com.google.android.flexbox.FlexboxLayout>
@@ -200,7 +201,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            android:onClick="@{() -> timerViewModel.timerValue == 0 ? cameraFragment.takePhoto() : timerViewModel.startTimer()}"/>
+            android:onClick="@{() -> timerViewModel.timerOption == TimerOption.OFF ? cameraFragment.takePhoto() : timerViewModel.startTimer()}"/>
 
         <ImageButton
             android:id="@+id/flip_camera_button"
@@ -213,7 +214,7 @@
             android:src="@drawable/ic_flip_camera"
             android:layout_marginBottom="25dp"
             android:layout_marginStart="25dp"
-            android:onClick="@{() -> cameraModeViewModel.switchCameraOrientation()}"/>
+            android:onClick="@{() -> cameraModeViewModel.switchAndSaveCameraOrientation()}"/>
 
         <ImageButton
             android:id="@+id/recent_photo_button"
