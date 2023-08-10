@@ -49,11 +49,6 @@ class CameraModeViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun setAndSaveFlashMode(option : FlashOption){
-        if(!shouldRefreshCamera){
-            return
-        }
-        shouldRefreshCamera = false
-
         val isSelecting = _flashOption.value?.equals(option) ?: false
 
         if(!isSelecting){

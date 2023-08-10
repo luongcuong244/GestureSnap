@@ -56,8 +56,9 @@ class CameraFragment : Fragment(),
     private lateinit var gestureRecognizerHelper: GestureRecognizerHelper
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
-    private var camera: Camera? = null
+    private var cameraSelector: CameraSelector? = null
     private var cameraProvider: ProcessCameraProvider? = null
+    private var aspectRatio: Int? = null
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundExecutor: ExecutorService
@@ -155,7 +156,7 @@ class CameraFragment : Fragment(),
 
         cameraModeViewModel.flashOption.observe(requireActivity()) {
             if(cameraProvider != null){
-                bindCameraUseCases(AppConstant.CAMERA_MODE_ANIMATION_DURATION_MILLIS)
+                setFlashMode(it.value)
             }
         }
 
@@ -216,7 +217,7 @@ class CameraFragment : Fragment(),
 
         val cameraModeViewModel = ViewModelProvider(requireActivity())[CameraModeViewModel::class.java]
 
-        val aspectRatio = cameraModeViewModel.cameraAspectRatio.value ?: AspectRatio.RATIO_4_3
+        aspectRatio = cameraModeViewModel.cameraAspectRatio.value ?: AspectRatio.RATIO_4_3
 
         // CameraProvider
         val cameraProvider = cameraProvider
@@ -224,17 +225,17 @@ class CameraFragment : Fragment(),
 
         val cameraOrientation = cameraModeViewModel.cameraOrientation.value?.value ?: CameraSelector.LENS_FACING_BACK
 
-        val cameraSelector =
+        cameraSelector =
             CameraSelector.Builder().requireLensFacing(cameraOrientation).build()
 
         // Preview. Only using the 4:3 ratio because this is the closest to our models
-        preview = Preview.Builder().setTargetAspectRatio(aspectRatio)
+        preview = Preview.Builder().setTargetAspectRatio(aspectRatio!!)
             .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
             .build()
 
         // ImageAnalysis. Using RGBA 8888 to match how our models work
         imageAnalyzer =
-            ImageAnalysis.Builder().setTargetAspectRatio(aspectRatio)
+            ImageAnalysis.Builder().setTargetAspectRatio(aspectRatio!!)
                 .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
@@ -249,7 +250,7 @@ class CameraFragment : Fragment(),
         val flashMode = cameraModeViewModel.flashOption.value?.value ?: ImageCapture.FLASH_MODE_OFF
 
         imageCapture = ImageCapture.Builder()
-            .setTargetAspectRatio(aspectRatio)
+            .setTargetAspectRatio(aspectRatio!!)
             .setFlashMode(flashMode)
             .build()
 
@@ -262,8 +263,8 @@ class CameraFragment : Fragment(),
                 try {
                     // A variable number of use-cases can be passed here -
                     // camera provides access to CameraControl & CameraInfo
-                    camera = cameraProvider.bindToLifecycle(
-                        viewLifecycleOwner, cameraSelector, preview, imageAnalyzer, imageCapture
+                    cameraProvider.bindToLifecycle(
+                        viewLifecycleOwner, cameraSelector!!, preview, imageAnalyzer, imageCapture
                     )
 
                     // Attach the viewfinder's surface provider to preview use case
@@ -276,6 +277,27 @@ class CameraFragment : Fragment(),
             },
             delay
         )
+    }
+
+    private fun setFlashMode(flashMode: Int) : Boolean{
+        if(cameraProvider == null || cameraSelector == null || aspectRatio == null){
+            return false
+        }
+
+        // rebind imageCapture
+
+        cameraProvider?.unbind(imageCapture)
+
+        imageCapture = ImageCapture.Builder()
+            .setTargetAspectRatio(aspectRatio!!)
+            .setFlashMode(flashMode)
+            .build()
+
+        cameraProvider?.bindToLifecycle(
+            viewLifecycleOwner, cameraSelector!!, imageCapture
+        )
+
+        return true
     }
 
     private fun recognizeHand(imageProxy: ImageProxy) {
