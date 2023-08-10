@@ -4,6 +4,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 object AppConstant {
+
+    const val CAMERA_MODE_ANIMATION_DURATION_MILLIS = 200L
+
     const val ANIMATION_DURATION_MILLIS = 300
 
     const val MIN_PHOTO_SCALE = 0.8f

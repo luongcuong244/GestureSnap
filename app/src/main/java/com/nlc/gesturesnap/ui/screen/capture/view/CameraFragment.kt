@@ -5,6 +5,8 @@ import android.content.res.Configuration
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -28,6 +30,7 @@ import com.nlc.gesturesnap.view_model.capture.GestureDetectViewModel
 import com.nlc.gesturesnap.view_model.capture.PermissionViewModel
 import com.nlc.gesturesnap.view_model.capture.RecentPhotoViewModel
 import com.nlc.gesturesnap.view_model.capture.TimerViewModel
+import kotlinx.coroutines.delay
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
@@ -80,6 +83,11 @@ class CameraFragment : Fragment(),
 
         // Start the GestureRecognizerHelper again when users come back
         // to the foreground.
+
+        cameraProvider?.let {
+            bindCameraUseCases(AppConstant.ANIMATION_DURATION_MILLIS.toLong())
+        }
+
         backgroundExecutor.execute {
             if (gestureRecognizerHelper.isClosed()) {
 
@@ -90,6 +98,9 @@ class CameraFragment : Fragment(),
 
     override fun onPause() {
         super.onPause()
+
+        cameraProvider?.unbindAll()
+
         if (this::gestureRecognizerHelper.isInitialized) {
             // Close the Gesture Recognizer helper and release resources
             backgroundExecutor.execute { gestureRecognizerHelper.clearGestureRecognizer() }
@@ -144,7 +155,7 @@ class CameraFragment : Fragment(),
 
         cameraModeViewModel.flashOption.observe(requireActivity()) {
             if(cameraProvider != null){
-                bindCameraUseCases()
+                bindCameraUseCases(AppConstant.CAMERA_MODE_ANIMATION_DURATION_MILLIS)
             }
         }
 
@@ -201,7 +212,7 @@ class CameraFragment : Fragment(),
 
     // Declare and bind preview, capture and analysis use cases
     @SuppressLint("UnsafeOptInUsageError", "RestrictedApi")
-    private fun bindCameraUseCases() {
+    private fun bindCameraUseCases(delay: Long = 0L) {
 
         val cameraModeViewModel = ViewModelProvider(requireActivity())[CameraModeViewModel::class.java]
 
@@ -242,23 +253,29 @@ class CameraFragment : Fragment(),
             .setFlashMode(flashMode)
             .build()
 
-        // Must unbind the use-cases before rebinding them
-        cameraProvider.unbindAll()
 
-        try {
-            // A variable number of use-cases can be passed here -
-            // camera provides access to CameraControl & CameraInfo
-            camera = cameraProvider.bindToLifecycle(
-                viewLifecycleOwner, cameraSelector, preview, imageAnalyzer, imageCapture
-            )
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed(
+            {
+                // Must unbind the use-cases before rebinding them
+                cameraProvider.unbindAll()
+                try {
+                    // A variable number of use-cases can be passed here -
+                    // camera provides access to CameraControl & CameraInfo
+                    camera = cameraProvider.bindToLifecycle(
+                        viewLifecycleOwner, cameraSelector, preview, imageAnalyzer, imageCapture
+                    )
 
-            // Attach the viewfinder's surface provider to preview use case
-            preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
-        } catch (exc: Exception) {
-            Log.e(TAG, "Use case binding failed", exc)
-        } finally {
-            cameraModeViewModel.setShouldRefreshCamera(true)
-        }
+                    // Attach the viewfinder's surface provider to preview use case
+                    preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
+                } catch (exc: Exception) {
+                    Log.e(TAG, "Use case binding failed", exc)
+                } finally {
+                    cameraModeViewModel.setShouldRefreshCamera(true)
+                }
+            },
+            delay
+        )
     }
 
     private fun recognizeHand(imageProxy: ImageProxy) {
