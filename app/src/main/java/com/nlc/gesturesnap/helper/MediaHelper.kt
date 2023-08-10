@@ -1,12 +1,13 @@
 package com.nlc.gesturesnap.helper
 
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
+import com.nlc.gesturesnap.model.PhotoInfo
 
 object MediaHelper {
 
@@ -43,7 +44,7 @@ object MediaHelper {
     }
 
     fun getLatestPhotoPath(context: Context): String? {
-        if (!PermissionHelper.isExternalStoragePermissionGranted(context)) {
+        if (!PermissionHelper.isReadExternalStoragePermissionGranted(context)) {
             return null
         }
 
@@ -64,5 +65,40 @@ object MediaHelper {
 
         cursor.close()
         return filePath
+    }
+
+    fun getAllPhotos(context: Context) : List<PhotoInfo>{
+
+        if (!PermissionHelper.isReadExternalStoragePermissionGranted(context)) {
+            return emptyList()
+        }
+
+        val uri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        val projection = arrayOf(
+            MediaStore.Images.Media._ID,
+            MediaStore.Images.Media.DATA,
+        )
+
+        val cursor =
+            context.contentResolver.query(uri, projection, null, null, null)
+                ?: return emptyList()
+
+        val photos = mutableListOf<PhotoInfo>()
+
+        while (cursor.moveToNext()) {
+
+            val imageId = cursor.getLong(0)
+            val photoUri = ContentUris.withAppendedId(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                imageId
+            )
+
+            val photoPath = cursor.getString(1)
+
+            photos.add(PhotoInfo(photoPath, photoUri))
+        }
+        cursor.close()
+
+        return photos
     }
 }

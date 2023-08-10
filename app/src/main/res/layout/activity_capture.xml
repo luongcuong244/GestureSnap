@@ -5,27 +5,27 @@
     <data>
         <import type="android.view.View"/>
         <import type="com.nlc.gesturesnap.R"/>
-        <import type="com.nlc.gesturesnap.screen.capture.ui.value.GestureCategory"/>
+        <import type="com.nlc.gesturesnap.model.enums.GestureCategory"/>
         <import type="androidx.camera.core.AspectRatio"/>
-        <import type="com.nlc.gesturesnap.screen.capture.ui.value.CameraOption"/>
+        <import type="com.nlc.gesturesnap.model.enums.CameraOption"/>
         <variable
             name="captureActivity"
-            type="com.nlc.gesturesnap.screen.capture.ui.CaptureActivity" />
+            type="com.nlc.gesturesnap.ui.screen.capture.CaptureActivity" />
         <variable
             name="gestureDetectViewModel"
-            type="com.nlc.gesturesnap.screen.capture.view_model.GestureDetectViewModel" />
+            type="com.nlc.gesturesnap.view_model.capture.GestureDetectViewModel" />
         <variable
             name="timerViewModel"
-            type="com.nlc.gesturesnap.screen.capture.view_model.TimerViewModel" />
+            type="com.nlc.gesturesnap.view_model.capture.TimerViewModel" />
         <variable
             name="cameraModeViewModel"
-            type="com.nlc.gesturesnap.screen.capture.view_model.CameraModeViewModel" />
+            type="com.nlc.gesturesnap.view_model.capture.CameraModeViewModel" />
         <variable
             name="cameraFragment"
-            type="com.nlc.gesturesnap.screen.capture.ui.view.CameraFragment" />
+            type="com.nlc.gesturesnap.ui.screen.capture.view.CameraFragment" />
         <variable
             name="permissionViewModel"
-            type="com.nlc.gesturesnap.screen.capture.view_model.PermissionViewModel" />
+            type="com.nlc.gesturesnap.view_model.capture.PermissionViewModel" />
         <variable
             name="screenRotation"
             type="com.nlc.gesturesnap.helper.OrientationLiveData" />

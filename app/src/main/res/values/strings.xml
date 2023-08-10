@@ -28,4 +28,19 @@
     <string name="tip_text">Tip:</string>
     <string name="camera_permission_tip">You have permanently denied the application Camera permissions. Please go to your phone\'s settings to authorize it manually.</string>
     <string name="storage_permission_tip">You have permanently denied the application Storage permissions. Please go to your phone\'s settings to authorize it manually.</string>
+
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="select">Select</string>
+
+    <string name="photo">Photo</string>
+    <string name="photos">Photos</string>
+
+    <string name="select_items">Select Items</string>
+    <string name="selected">Selected</string>
+    <string name="camera">Camera</string>
+
+    <string name="photo_deletion_dialog_title">Confirm Delete</string>
+    <string name="photo_deletion_dialog_text_content">The photos will be completely deleted from the device. Are you sure you want to delete it?</string>
+
 </resources>
