@@ -378,6 +378,11 @@ class CaptureActivity : AppCompatActivity() {
 
     fun onClickCaptureButton(){
 
+        if(!PermissionHelper.isReadExternalStoragePermissionGranted(this)){
+            binding.permissionViewModel?.setStoragePermissionDialogShowing(true)
+            return
+        }
+
         binding.gestureDetectViewModel?.setIsDetecting(false)
         binding.gestureDetectViewModel?.cancelTimer()
 
