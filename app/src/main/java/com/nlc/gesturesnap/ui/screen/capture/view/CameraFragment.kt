@@ -233,7 +233,7 @@ class CameraFragment : Fragment(),
         val cameraProvider = cameraProvider
             ?: throw IllegalStateException("Camera initialization failed.")
 
-        val cameraOrientation = cameraModeViewModel.cameraOrientation.value?.value ?: CameraSelector.LENS_FACING_BACK
+        val cameraOrientation = cameraModeViewModel.cameraOrientation.value ?: CameraSelector.LENS_FACING_BACK
 
         cameraSelector =
             CameraSelector.Builder().requireLensFacing(cameraOrientation).build()
@@ -352,6 +352,7 @@ class CameraFragment : Fragment(),
             if (_fragmentCameraBinding != null) {
 
                 if(fragmentCameraBinding.gestureDetectViewModel?.shouldRunHandTracking?.value == false){
+                    fragmentCameraBinding.overlay.clear()
                     return@runOnUiThread
                 }
 

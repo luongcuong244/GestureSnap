@@ -1,8 +1,12 @@
 package com.nlc.gesturesnap.ui.screen.capture
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CameraMetadata
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -12,6 +16,7 @@ import android.widget.FrameLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
+import androidx.camera.core.CameraSelector
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
@@ -28,7 +33,6 @@ import com.nlc.gesturesnap.helper.PermissionHelper
 import com.nlc.gesturesnap.ui.screen.capture.animation.AnimationHandler
 import com.nlc.gesturesnap.ui.screen.capture.component.GestureDetectAdapter
 import com.nlc.gesturesnap.model.enums.CameraOption
-import com.nlc.gesturesnap.model.enums.CameraOrientation
 import com.nlc.gesturesnap.model.enums.FlashOption
 import com.nlc.gesturesnap.model.enums.TimerOption
 import com.nlc.gesturesnap.ui.screen.capture.view.CameraFragment
@@ -90,7 +94,7 @@ class CaptureActivity : AppCompatActivity() {
 
     private lateinit var animationHandler: AnimationHandler
 
-    private val cameraFragment = CameraFragment()
+    private var cameraFragment : CameraFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -108,9 +112,12 @@ class CaptureActivity : AppCompatActivity() {
         setupCameraModeViewModel()
         setupRecentPhotoViewModel()
 
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, cameraFragment)
-            .commit()
+        if(binding.cameraModeViewModel?.availableCameraOrientations?.isNotEmpty() == true){
+            cameraFragment = CameraFragment()
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, cameraFragment!!)
+                .commit()
+        }
 
         binding.cameraFragment = cameraFragment
 
@@ -142,12 +149,6 @@ class CaptureActivity : AppCompatActivity() {
                 }
             }
         }
-
-        permissionViewModel.setCameraPermissionDialogShowing(!PermissionHelper.isCameraPermissionGranted(this))
-        permissionViewModel.setStoragePermissionDialogShowing(false)
-
-        permissionViewModel.setCameraPermissionTipDialogShowing(false)
-        permissionViewModel.setStoragePermissionTipDialogShowing(false)
 
         permissionViewModel.setCameraPermissionGranted(PermissionHelper.isCameraPermissionGranted(this))
         permissionViewModel.setStoragePermissionGranted(PermissionHelper.isReadExternalStoragePermissionGranted(this))
@@ -217,13 +218,19 @@ class CaptureActivity : AppCompatActivity() {
         val cameraModeViewModel =
             ViewModelProvider(this)[CameraModeViewModel::class.java]
 
+        cameraModeViewModel.availableCameraOrientations = getAvailableCameraOrientations()
+
         binding.cameraModeViewModel = cameraModeViewModel
 
         val storedGridModeValue = (LocalStorageHelper.readData(this, AppConstant.GRID_MODE_VALUE_KEY) as Boolean?) ?: false
         cameraModeViewModel.setAndSaveGridMode(storedGridModeValue)
 
-        val storedCameraOrientationIndex = (LocalStorageHelper.readData(this, AppConstant.CAMERA_ORIENTATION_INDEX_KEY) as Int?) ?: 0
-        cameraModeViewModel.setAndSaveCameraOrientation(CameraOrientation.values()[storedCameraOrientationIndex])
+        if(cameraModeViewModel.availableCameraOrientations.isNotEmpty()){
+            val storedCameraOrientationValue =
+                (LocalStorageHelper.readData(this, AppConstant.CAMERA_ORIENTATION_VALUE_KEY) as Int?)
+                    ?: cameraModeViewModel.availableCameraOrientations[0]
+            cameraModeViewModel.setAndSaveCameraOrientation(storedCameraOrientationValue)
+        }
 
         val storedFlashModeIndex = (LocalStorageHelper.readData(this, AppConstant.FLASH_MODE_INDEX_KEY) as Int?) ?: 0
         cameraModeViewModel.setAndSaveFlashMode(
@@ -280,6 +287,43 @@ class CaptureActivity : AppCompatActivity() {
         }
     }
 
+    private fun getAvailableCameraOrientations() : List<Int>{
+
+        val availableCameraOrientations = mutableListOf<Int>()
+
+        val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
+        val cameraIds = cameraManager.cameraIdList.filter {
+            val characteristics = cameraManager.getCameraCharacteristics(it)
+            val capabilities = characteristics.get(
+                CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
+            capabilities?.contains(
+                CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE) ?: false
+        }
+
+        cameraIds.forEach { cameraId ->
+            val cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId)
+            val isCameraAvailable = cameraCharacteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) != CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY
+
+            if (isCameraAvailable) {
+                val orientationId = lensOrientationInt(
+                    cameraCharacteristics.get(CameraCharacteristics.LENS_FACING)!!
+                )
+                if(orientationId != -1){
+                    availableCameraOrientations.add(orientationId)
+                }
+            }
+        }
+
+        return availableCameraOrientations
+    }
+
+    private fun lensOrientationInt(value: Int) = when(value) {
+        CameraCharacteristics.LENS_FACING_BACK -> CameraSelector.LENS_FACING_BACK
+        CameraCharacteristics.LENS_FACING_FRONT -> CameraSelector.LENS_FACING_FRONT
+        else -> -1
+    }
+
     private fun setupRecentPhotoViewModel(){
         val recentPhotoViewModel =
             ViewModelProvider(this)[RecentPhotoViewModel::class.java]
@@ -334,8 +378,11 @@ class CaptureActivity : AppCompatActivity() {
 
     fun onClickCaptureButton(){
 
+        binding.gestureDetectViewModel?.setIsDetecting(false)
+        binding.gestureDetectViewModel?.cancelTimer()
+
         if(binding.timerViewModel?.timerOption?.value == TimerOption.OFF){
-            cameraFragment.takePhoto()
+            cameraFragment?.takePhoto()
         } else {
 
             binding.gestureDetectViewModel?.setShouldRunHandTracking(false)

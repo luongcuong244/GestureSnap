@@ -212,9 +212,23 @@
             app:layout_constraintBottom_toBottomOf="parent"
             android:background="@drawable/black_circle"
             android:src="@drawable/ic_flip_camera"
+            android:alpha="@{cameraModeViewModel.availableCameraOrientations.size() > 1 ? 1F : 0.5F}"
             android:layout_marginBottom="25dp"
             android:layout_marginStart="25dp"
             android:onClick="@{() -> cameraModeViewModel.switchAndSaveCameraOrientation()}"/>
+
+        <include
+            android:id="@+id/camera_permission_warning"
+            layout="@layout/camera_permission_warning"
+            android:visibility="@{(!permissionViewModel.isCameraPermissionDialogShowing &amp;&amp; !permissionViewModel.isCameraPermissionTipDialogShowing &amp;&amp; !permissionViewModel.isCameraPermissionGranted &amp;&amp; cameraModeViewModel.availableCameraOrientations.size() > 0) ? View.VISIBLE : View.GONE}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"
+            app:onClick="@{() -> permissionViewModel.setCameraPermissionDialogShowing(true)}"/>
+
+        <include
+            android:id="@+id/no_camera_available_warning"
+            layout="@layout/no_camera_available_warning"
+            android:visibility="@{cameraModeViewModel.availableCameraOrientations.size() > 0 ? View.GONE : View.VISIBLE}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"/>
 
         <ImageButton
             android:id="@+id/recent_photo_button"
@@ -268,13 +282,6 @@
             app:screenRotationValue="@{-screenRotation.intValue()}"
             app:onClickApplyButton="@{() -> captureActivity.closeDialogAndOpenAppInfo()}"
             app:onClickCancelButton="@{() -> permissionViewModel.setStoragePermissionTipDialogShowing(false)}"/>
-
-        <include
-            android:id="@+id/camera_permission_warning"
-            layout="@layout/camera_permission_warning"
-            android:visibility="@{(!permissionViewModel.isCameraPermissionDialogShowing &amp;&amp; !permissionViewModel.isCameraPermissionTipDialogShowing &amp;&amp; !permissionViewModel.isCameraPermissionGranted) ? View.VISIBLE : View.GONE}"
-            app:screenRotationValue="@{-screenRotation.intValue()}"
-            app:onClick="@{() -> permissionViewModel.setCameraPermissionDialogShowing(true)}"/>
 
         <RelativeLayout
             android:id="@+id/timer_text_container"

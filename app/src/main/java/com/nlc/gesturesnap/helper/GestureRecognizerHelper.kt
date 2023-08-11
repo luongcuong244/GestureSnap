@@ -95,7 +95,7 @@ class GestureRecognizerHelper(
 
         } catch (e: IllegalStateException) {
             gestureRecognizerListener?.onError(
-                "Gesture recognizer failed to initialize. See error logs for " + "details"
+                "Gesture recognizer failed to initialize."
             )
             Log.e(
                 TAG,
@@ -103,7 +103,7 @@ class GestureRecognizerHelper(
             )
         } catch (e: RuntimeException) {
             gestureRecognizerListener?.onError(
-                "Gesture recognizer failed to initialize. See error logs for " + "details",
+                "Gesture recognizer failed to initialize.",
                 GPU_ERROR
             )
             Log.e(

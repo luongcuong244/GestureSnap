@@ -155,11 +155,6 @@ class GestureDetectViewModel(application: Application) : AndroidViewModel(applic
 
     fun setShouldRunHandTracking(value: Boolean){
         _shouldRunHandTracking.value = value
-
-        if(!value){
-            _isDetecting = false
-            cancelTimer()
-        }
     }
 
     fun startTimer(){
