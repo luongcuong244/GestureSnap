@@ -165,21 +165,14 @@ class GestureDetectViewModel(application: Application) : AndroidViewModel(applic
 
             override fun onFinish() {
                 // activate the self-timer
-
-                Log.d("DGDGDG", "DDLD")
-
                 _timerTrigger.value = !(timerTrigger.value ?: false)
                 cancelTimer()
             }
         }
-
-        Log.d("DGDGDG", "start")
         _countDownTimer?.start()
     }
 
     fun cancelTimer(){
-        _handGestureProgress.value = 0
-        Log.d("DGDGDG", "cancel")
         _countDownTimer?.cancel()
     }
 
