@@ -442,11 +442,14 @@ class CameraFragment : Fragment(),
                         "Can't take a photo. Something went wrong!",
                         Toast.LENGTH_SHORT
                     ).show()
+                    Log.e(TAG, exception.toString())
                     super.onError(exception)
                 }
 
                 override fun onCaptureSuccess(image: ImageProxy) {
                     super.onCaptureSuccess(image)
+
+                    Log.d(TAG, "Capture Success")
 
                     val recentPhotoViewModel =
                         ViewModelProvider(requireActivity())[RecentPhotoViewModel::class.java]
