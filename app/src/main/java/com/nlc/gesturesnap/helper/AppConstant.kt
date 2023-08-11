@@ -14,6 +14,8 @@ object AppConstant {
     const val HAND_TRACKING_MODE_VALUE_KEY = "hand_tracking_mode_value_key"
     const val CAMERA_ORIENTATION_INDEX_KEY = "camera_orientation_index_key"
 
+    const val HAND_DETECTING_TIME_IN_MILLI = 3000L
+
     const val CAMERA_MODE_ANIMATION_DURATION_MILLIS = 200L
 
     const val ANIMATION_DURATION_MILLIS = 300

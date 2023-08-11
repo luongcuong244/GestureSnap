@@ -16,10 +16,12 @@ import com.nlc.gesturesnap.model.enums.GestureCategory
 
 class GestureDetectViewModel(application: Application) : AndroidViewModel(application) {
 
-    val HAND_DETECTING_TIME_IN_MILLI = 3000L
-
     private var _countDownTimer : CountDownTimer? = null
     private var _isDetecting : Boolean = false
+
+    private var _shouldRunHandTracking = MutableLiveData<Boolean>().apply {
+        this.value = true
+    }
 
     private val _currentHandGesture = MutableLiveData<GestureDetectOption>()
     private val _isDrawHandTrackingLine = MutableLiveData<Boolean>().apply {
@@ -31,6 +33,8 @@ class GestureDetectViewModel(application: Application) : AndroidViewModel(applic
 
     // if the data of the _timerTrigger changes, the self-timer will run
     private val _timerTrigger = MutableLiveData<Boolean>()
+
+    val shouldRunHandTracking : LiveData<Boolean> = _shouldRunHandTracking
 
     val handGestureOptions = MutableLiveData<List<GestureDetectOption>>()
     val currentHandGesture : LiveData<GestureDetectOption> = _currentHandGesture
@@ -149,24 +153,38 @@ class GestureDetectViewModel(application: Application) : AndroidViewModel(applic
         )
     }
 
+    fun setShouldRunHandTracking(value: Boolean){
+        _shouldRunHandTracking.value = value
+
+        if(!value){
+            _isDetecting = false
+            cancelTimer()
+        }
+    }
+
     fun startTimer(){
-        _countDownTimer = object : CountDownTimer(HAND_DETECTING_TIME_IN_MILLI, 100) {
+        _countDownTimer = object : CountDownTimer(AppConstant.HAND_DETECTING_TIME_IN_MILLI, 100) {
             override fun onTick(millisUntilFinished: Long) {
-                _handGestureProgress.value = (100 * ( 1 - millisUntilFinished / HAND_DETECTING_TIME_IN_MILLI.toDouble())).toInt()
+                _handGestureProgress.value = (100 * ( 1 - millisUntilFinished / AppConstant.HAND_DETECTING_TIME_IN_MILLI.toDouble())).toInt()
             }
 
             override fun onFinish() {
                 // activate the self-timer
+
+                Log.d("DGDGDG", "DDLD")
+
                 _timerTrigger.value = !(timerTrigger.value ?: false)
                 cancelTimer()
             }
         }
 
+        Log.d("DGDGDG", "start")
         _countDownTimer?.start()
     }
 
     fun cancelTimer(){
         _handGestureProgress.value = 0
+        Log.d("DGDGDG", "cancel")
         _countDownTimer?.cancel()
     }
 

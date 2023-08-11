@@ -160,6 +160,16 @@ class CameraFragment : Fragment(),
             }
         }
 
+        gestureDetectViewModel.shouldRunHandTracking.observe(requireActivity()) {
+            if(cameraProvider != null){
+                if(it)
+                    bindImageAnalyzer()
+                else {
+                    unbindImageAnalyzer()
+                }
+            }
+        }
+
         relativeOrientation = OrientationLiveData(requireContext()).apply {
             observe(viewLifecycleOwner) { orientation ->
                 Log.d(TAG, "Orientation changed: $orientation")
@@ -300,6 +310,25 @@ class CameraFragment : Fragment(),
         return true
     }
 
+    private fun bindImageAnalyzer(){
+        if(imageAnalyzer == null){
+            return
+        }
+
+        unbindImageAnalyzer()
+
+        cameraProvider?.bindToLifecycle(
+            viewLifecycleOwner, cameraSelector!!, imageAnalyzer
+        )
+    }
+
+    private fun unbindImageAnalyzer(){
+        if(imageAnalyzer == null){
+            return
+        }
+        cameraProvider?.unbind(imageAnalyzer)
+    }
+
     private fun recognizeHand(imageProxy: ImageProxy) {
         gestureRecognizerHelper.recognizeLiveStream(
             imageProxy = imageProxy,
@@ -321,6 +350,11 @@ class CameraFragment : Fragment(),
     ) {
         activity?.runOnUiThread {
             if (_fragmentCameraBinding != null) {
+
+                if(fragmentCameraBinding.gestureDetectViewModel?.shouldRunHandTracking?.value == false){
+                    return@runOnUiThread
+                }
+
                 // Show result of recognized gesture
                 val gestureCategories = resultBundle.results.first().gestures()
 

@@ -202,7 +202,14 @@ class CaptureActivity : AppCompatActivity() {
         }
 
         gestureDetectViewModel.timerTrigger.observe(this) {
-            binding.timerViewModel?.startTimer()
+
+            gestureDetectViewModel.setShouldRunHandTracking(false)
+
+            binding.timerViewModel?.startTimer(
+                onFinish = {
+                    gestureDetectViewModel.setShouldRunHandTracking(true)
+                }
+            )
         }
     }
 
@@ -323,6 +330,22 @@ class CaptureActivity : AppCompatActivity() {
 
     fun showMenuBar(cameraOption: CameraOption){
         animationHandler.showMenuBar(cameraOption)
+    }
+
+    fun onClickCaptureButton(){
+
+        if(binding.timerViewModel?.timerOption?.value == TimerOption.OFF){
+            cameraFragment.takePhoto()
+        } else {
+
+            binding.gestureDetectViewModel?.setShouldRunHandTracking(false)
+
+            binding.timerViewModel?.startTimer(
+                onFinish = {
+                    binding.gestureDetectViewModel?.setShouldRunHandTracking(true)
+                }
+            )
+        }
     }
 
     override fun onResume() {

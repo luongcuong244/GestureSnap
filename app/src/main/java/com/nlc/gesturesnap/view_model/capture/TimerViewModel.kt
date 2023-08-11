@@ -37,7 +37,7 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
             TimerOption.values().indexOf(option)
         )
     }
-    fun startTimer(){
+    fun startTimer(onFinish: () -> Unit){
 
         // plus one for a delay
         val timeForCountDown : Int = (_timerOption.value ?: TimerOption.OFF).value + 1
@@ -54,6 +54,8 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
                 _photoSavingTrigger.value = !(_photoSavingTrigger.value ?: false)
                 _timerValue.value = 0
                 _countDownTimer?.cancel()
+
+                onFinish()
             }
         }
 
