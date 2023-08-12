@@ -12,13 +12,12 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -35,6 +34,7 @@ import com.nlc.gesturesnap.ui.screen.capture.component.GestureDetectAdapter
 import com.nlc.gesturesnap.model.enums.CameraOption
 import com.nlc.gesturesnap.model.enums.FlashOption
 import com.nlc.gesturesnap.model.enums.TimerOption
+import com.nlc.gesturesnap.ui.screen.capture.responsive.PositionCalculator
 import com.nlc.gesturesnap.ui.screen.capture.view.CameraFragment
 import com.nlc.gesturesnap.ui.screen.gallery.GalleryActivity
 import com.nlc.gesturesnap.view_model.capture.CameraModeViewModel
@@ -93,6 +93,7 @@ class CaptureActivity : AppCompatActivity() {
     private var gestureDetectAdapter : GestureDetectAdapter? = null
 
     private lateinit var animationHandler: AnimationHandler
+    private lateinit var positionCalculator : PositionCalculator
 
     private var cameraFragment : CameraFragment? = null
 
@@ -103,6 +104,7 @@ class CaptureActivity : AppCompatActivity() {
             this, R.layout.activity_capture)
 
         animationHandler = AnimationHandler(this, binding)
+        positionCalculator = PositionCalculator(this, binding)
 
         binding.lifecycleOwner = this
 
@@ -251,36 +253,26 @@ class CaptureActivity : AppCompatActivity() {
             try {
                 var layoutParams : FrameLayout.LayoutParams? = null
 
-                val constraintLayout : ConstraintLayout = findViewById(R.id.capture_screen_root_view)
-                val constraintSet = ConstraintSet()
-                constraintSet.clone(constraintLayout)
-
-                val params = binding.handGestureProgressContainer.layoutParams as ConstraintLayout.LayoutParams
-
                 when(it){
                     AspectRatio.RATIO_4_3 -> {
                         layoutParams = FrameLayout.LayoutParams(deviceWidth, deviceWidth * 4 / 3)
-
-                        constraintSet.connect(R.id.hand_gesture_progress_container, ConstraintSet.BOTTOM, R.id.fragment_container, ConstraintSet.BOTTOM)
-                        constraintSet.applyTo(constraintLayout)
-
-                        params.bottomMargin = resources.getDimension(R.dimen.small_padding).toInt()
                     }
                     AspectRatio.RATIO_16_9 -> {
                         layoutParams = FrameLayout.LayoutParams(deviceWidth, deviceWidth * 16 / 9)
-
-                        constraintSet.connect(R.id.hand_gesture_progress_container, ConstraintSet.BOTTOM, R.id.option_bar_container, ConstraintSet.TOP)
-                        constraintSet.applyTo(constraintLayout)
-
-                        params.bottomMargin = resources.getDimension(R.dimen.large_padding).toInt()
                     }
                 }
 
                 if(layoutParams != null){
                     binding.fragmentContainer.layoutParams = layoutParams
-                }
 
-                binding.handGestureProgressContainer.layoutParams = params
+                    binding.fragmentContainer.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                        override fun onGlobalLayout() {
+                            binding.fragmentContainer.viewTreeObserver.removeOnGlobalLayoutListener(this)
+
+                            positionCalculator.calculateViewsPosition()
+                        }
+                    })
+                }
             } catch (e : java.lang.Exception){
                 Log.d(TAG, e.toString())
             }
