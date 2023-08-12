@@ -22,6 +22,7 @@ fun BoxScope.Header(){
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .height(50.dp)
             .background(color = colorResource(R.color.gray_white))
             .pointerInput(Unit) {}
             .drawBehind {
