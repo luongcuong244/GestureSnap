@@ -173,6 +173,7 @@ class GestureDetectViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun cancelTimer(){
+        _handGestureProgress.value = 0
         _countDownTimer?.cancel()
     }
 
