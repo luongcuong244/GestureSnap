@@ -16,5 +16,17 @@
 
     <style name="Theme.GestureSnap.NoActionBar" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:fontFamily">@font/poppins_family</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+
+    <style name="Theme.GestureSnap.Default" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:colorPrimaryDark">@color/gray_white</item>
+        <item name="android:navigationBarColor">@color/gray_white</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 </resources>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="onClick"
+            type="android.view.View.OnClickListener" />
+        <variable
+            name="screenRotationValue"
+            type="java.lang.Integer" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:onClick="@{onClick}"
+        android:clickable="true"
+        android:focusable="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:rotation="@{screenRotationValue}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent">
+
+            <ImageView
+                android:id="@+id/icon"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:src="@drawable/ic_camera_white"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"/>
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/turquoise"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:fontFamily="@font/poppins_semibold"
+                android:layout_marginTop="5dp"
+                android:text="@string/click_turn_on_camera_permissions"
+                app:layout_constraintTop_toBottomOf="@id/icon"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:gravity="center"
+                android:textSize="12sp"
+                android:fontFamily="@font/poppins_semibold"
+                android:layout_marginTop="5dp"
+                android:text="@string/camera_permission_dialog_description"
+                app:layout_constraintTop_toBottomOf="@id/title"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
