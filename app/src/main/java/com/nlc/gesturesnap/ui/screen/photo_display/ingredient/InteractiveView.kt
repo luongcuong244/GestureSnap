@@ -22,6 +22,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.view_model.photo_display.PhotoDisplayViewModel
 
@@ -75,9 +76,16 @@ fun InteractiveView(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
         ), label = ""
     )
 
+    val systemUiController = rememberSystemUiController()
+
     val onTap = remember {
-        { _: Offset, _: InteractedObject->
-            photoDisplayViewModel.setIsOnlyDisplayPhoto(!photoDisplayViewModel.isOnlyDisplayPhoto.value)
+        { _: Offset, _: InteractedObject ->
+
+            val isOnlyDisplayPhoto = !photoDisplayViewModel.isOnlyDisplayPhoto.value
+
+            systemUiController.isSystemBarsVisible = !isOnlyDisplayPhoto
+
+            photoDisplayViewModel.setIsOnlyDisplayPhoto(isOnlyDisplayPhoto)
         }
     }
 

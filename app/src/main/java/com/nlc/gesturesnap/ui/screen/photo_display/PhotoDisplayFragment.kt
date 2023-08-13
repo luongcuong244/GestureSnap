@@ -154,7 +154,10 @@ fun PhotoDisplayComposeScreen(photoDisplayViewModel: PhotoDisplayViewModel = vie
         ) {
             InteractiveView()
             ViewContainer()
-            PhotoDetailDialog()
+
+            if(photoDisplayViewModel.isPhotoDetailDialogVisible.value){
+                PhotoDetailDialog()
+            }
 
             if(photoDisplayViewModel.isPhotoDeletionDialogVisible.value){
                 PhotoDeletionDialog(

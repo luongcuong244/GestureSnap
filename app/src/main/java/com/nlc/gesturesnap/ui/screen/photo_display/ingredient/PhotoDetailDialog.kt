@@ -12,7 +12,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +28,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.helper.Formatter
@@ -38,13 +41,27 @@ data class ItemInfo(val title: String, val value: String)
 @Composable
 fun PhotoDetailDialog(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
 
+    val backgroundColor = colorResource(R.color.black_500)
+    val defaultSystemBarsColor = colorResource(R.color.gray_white)
+
+    val systemUiController = rememberSystemUiController()
+
+    DisposableEffect(Unit){
+
+        systemUiController.setSystemBarsColor(backgroundColor)
+
+        onDispose {
+            systemUiController.setSystemBarsColor(defaultSystemBarsColor)
+        }
+    }
+
     val context = LocalContext.current
 
     val items = remember {
-        mutableListOf<ItemInfo>()
+        mutableStateListOf<ItemInfo>()
     }
 
-    LaunchedEffect(photoDisplayViewModel.fragmentArgument.value.photo){
+    LaunchedEffect(Unit){
 
         val photoInfo = photoDisplayViewModel.fragmentArgument.value.photo
 
@@ -82,47 +99,45 @@ fun PhotoDetailDialog(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()
         )
     }
 
-    if(photoDisplayViewModel.isPhotoDetailDialogVisible.value){
-        Box(
-            Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectTapGestures {
-                        photoDisplayViewModel.setPhotoDetailDialogVisible(false)
-                    }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    photoDisplayViewModel.setPhotoDetailDialogVisible(false)
                 }
+            }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(colorResource(R.color.black_500))
+                .padding(20.dp)
         ) {
-            Box(
+            Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(colorResource(R.color.black_500))
-                    .padding(20.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(5))
+                    .background(Color.White)
+                    .padding(15.dp)
+                    .height(300.dp)
+                    .align(Alignment.Center)
+                    .pointerInput(Unit){
+                        detectTapGestures {  }
+                    }
             ) {
-                Column(
+                Text(
+                    text = stringResource(R.string.details),
+                    fontFamily = FontFamily(Font(R.font.poppins_medium)),
+                    fontSize = AppConstant.TITLE_FONT_SIZE,
+                )
+                LazyColumn(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(5))
-                        .background(Color.White)
-                        .padding(15.dp)
-                        .height(300.dp)
-                        .align(Alignment.Center)
-                        .pointerInput(Unit){
-                            detectTapGestures {  }
-                        }
+                        .padding(top = 10.dp)
+                        .weight(1f),
                 ) {
-                    Text(
-                        text = stringResource(R.string.details),
-                        fontFamily = FontFamily(Font(R.font.poppins_medium)),
-                        fontSize = AppConstant.TITLE_FONT_SIZE,
-                    )
-                    LazyColumn(
-                        modifier = Modifier
-                            .padding(top = 10.dp)
-                            .weight(1f),
-                    ) {
-                        items(items.size) {
-                            Item(items[it])
-                        }
+                    items(items.size) {
+                        Item(items[it])
                     }
                 }
             }
