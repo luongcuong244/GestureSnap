@@ -428,9 +428,6 @@ class CameraFragment : Fragment(),
         // modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
-        // Create time-stamped output file to hold the image
-        val photoName = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis()) + ".jpg"
-
         fragmentCameraBinding.viewFinder.post(animationTask)
 
         imageCapture.takePicture(
@@ -462,6 +459,9 @@ class CameraFragment : Fragment(),
                     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 
                     recentPhotoViewModel.setRecentPhoto(bitmap)
+
+                    // Create time-stamped output file to hold the image
+                    val photoName = "IMG_" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis()) + ".jpg"
 
                     val photoUri = MediaHelper.createPhotoUri(requireContext(), "Pictures", photoName)
 
