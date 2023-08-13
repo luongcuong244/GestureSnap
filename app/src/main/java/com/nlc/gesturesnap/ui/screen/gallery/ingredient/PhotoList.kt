@@ -40,9 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.model.PhotoInfo
 import com.nlc.gesturesnap.model.SelectablePhoto
-import com.nlc.gesturesnap.ui.screen.gallery.bottomBarHeight
 import com.nlc.gesturesnap.ui.screen.photo_display.PhotoDisplayFragment
 import com.nlc.gesturesnap.view_model.gallery.GalleryViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -65,11 +65,11 @@ fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()
     LazyVerticalGrid(
         modifier = Modifier
             .fillMaxSize()
-            .offset(0.dp, offsetValue - bottomBarHeight),
+            .offset(0.dp, offsetValue - AppConstant.BOTTOM_BAR_HEIGHT),
         columns = GridCells.Fixed(3),
         verticalArrangement = Arrangement.spacedBy(2.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
-        contentPadding = PaddingValues(top = bottomBarHeight - offsetValue),
+        contentPadding = PaddingValues(top = AppConstant.BOTTOM_BAR_HEIGHT - offsetValue),
         state = gridState
     ) {
         items(galleryViewModel.photos.size) { index ->

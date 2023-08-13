@@ -14,37 +14,27 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.helper.MediaHelper
 import com.nlc.gesturesnap.helper.PermissionHelper
+import com.nlc.gesturesnap.listener.PhotoDeleteListener
 import com.nlc.gesturesnap.model.SelectablePhoto
 import com.nlc.gesturesnap.ui.component.PhotoDeletionDialog
-import com.nlc.gesturesnap.ui.screen.gallery.ingredient.BackButton
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.BottomBar
-import com.nlc.gesturesnap.ui.screen.gallery.ingredient.ChoiceButton
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.Header
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.PhotoDisplayFragmentView
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.PhotosList
@@ -54,8 +44,9 @@ import com.nlc.gesturesnap.view_model.shared.PhotoDisplayFragmentStateViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.File
 
-class GalleryActivity : AppCompatActivity() {
+class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
 
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
 
@@ -63,11 +54,20 @@ class GalleryActivity : AppCompatActivity() {
 
     private val condVarWaitState = ConditionVariable()
 
+    private val actions = Actions()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val allPhotos = MediaHelper.getAllPhotos(this).map {
-            SelectablePhoto(it.path, it.uri)
+            SelectablePhoto(
+                path = it.path,
+                uri = it.uri,
+                name = it.name,
+                size = it.size,
+                dateTaken = it.dateTaken,
+                resolution = it.resolution
+            )
         }
 
         val galleryViewModel =
@@ -88,8 +88,6 @@ class GalleryActivity : AppCompatActivity() {
             }
         }
 
-        val actions = Actions()
-
         setContent {
             MaterialTheme {
                 GalleryActivityComposeScreen(actions, supportFragmentManager)
@@ -98,7 +96,7 @@ class GalleryActivity : AppCompatActivity() {
 
         intentSenderLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
             if(it.resultCode == RESULT_OK) {
-                actions.updateAfterDeletingPhotosSuccessfully()
+                updateAfterDeletingPhotosSuccessfully()
             }
         }
 
@@ -171,28 +169,57 @@ class GalleryActivity : AppCompatActivity() {
                 }
             }
         }
+    }
 
-        fun updateAfterDeletingPhotosSuccessfully(){
-            val galleryViewModel =
-                ViewModelProvider(this@GalleryActivity)[GalleryViewModel::class.java]
+    private fun updateAfterDeletingPhotosSuccessfully(){
 
-            galleryViewModel.photos.removeIf {
-                it.isSelecting
+        closePhotoDisplayFragment()
+
+        val galleryViewModel =
+            ViewModelProvider(this@GalleryActivity)[GalleryViewModel::class.java]
+
+        galleryViewModel.photos.removeIf {
+            !File(it.path).exists()
+        }
+
+        galleryViewModel.setIsPhotoDeletionDialogVisible(false)
+        galleryViewModel.setIsSelectable(false)
+    }
+
+    private fun closePhotoDisplayFragment(){
+        val galleryViewModel =
+            ViewModelProvider(this@GalleryActivity)[GalleryViewModel::class.java]
+
+        val fragmentManager = supportFragmentManager
+        val fragments = fragmentManager.fragments
+
+        fragments.forEach {
+            if(it is PhotoDisplayFragment){
+                it.closeFragment()
+                galleryViewModel.setFragmentArgument(PhotoDisplayFragment.Argument())
             }
-
-            galleryViewModel.setIsPhotoDeletionDialogVisible(false)
-            galleryViewModel.setIsSelectable(false)
         }
     }
-}
 
-val bottomBarHeight = 50.dp
+    @RequiresApi(Build.VERSION_CODES.R)
+    override fun deletePhotosWithApi30orLater(photoUri: Uri) {
+        actions.deletePhotosWithApi30orLater(listOf(photoUri))
+    }
+
+    override fun deletePhotoWithApi29(photoUri: Uri) {
+        actions.deletePhotoWithApi29(photoUri)
+    }
+
+    override fun deletePhotosWithApi28orOlder(photoUri: Uri) {
+        actions.deletePhotosWithApi28orOlder(listOf(photoUri))
+    }
+}
 
 @Composable
 fun GalleryActivityComposeScreen(activityActions: GalleryActivity.Actions, fragmentManager: FragmentManager, galleryViewModel: GalleryViewModel = viewModel()){
 
     val bottomBarTranslationValue by animateDpAsState(
-        targetValue = if(galleryViewModel.isSelectable.value) 0.dp else bottomBarHeight,
+        targetValue = if(galleryViewModel.isSelectable.value) 0.dp else AppConstant.BOTTOM_BAR_HEIGHT,
         label = ""
     )
 
@@ -240,21 +267,4 @@ fun GalleryActivityComposeScreen(activityActions: GalleryActivity.Actions, fragm
             PhotoDisplayFragmentView(fragmentManager)
         }
     }
-}
-
-@Composable
-fun OverlayBackground(){
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        colorResource(id = R.color.black_700),
-                        Color.Transparent
-                    )
-                )
-            )
-    )
 }

@@ -26,7 +26,6 @@ import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.ui.component.SquareIconButton
 import com.nlc.gesturesnap.ui.screen.gallery.GalleryActivity
-import com.nlc.gesturesnap.ui.screen.gallery.bottomBarHeight
 import com.nlc.gesturesnap.view_model.gallery.GalleryViewModel
 
 @Composable
@@ -34,7 +33,7 @@ fun BoxScope.BottomBar(activityActions: GalleryActivity.Actions, translationYVal
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(bottomBarHeight)
+            .height(AppConstant.BOTTOM_BAR_HEIGHT)
             .align(Alignment.BottomEnd)
             .offset(0.dp, translationYValue)
             .background(color = colorResource(R.color.gray_white)) // note the order of background method and padding method

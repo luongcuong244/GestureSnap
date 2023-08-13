@@ -137,19 +137,10 @@ class CaptureActivity : AppCompatActivity() {
             ViewModelProvider(this)[PermissionViewModel::class.java]
 
         permissionViewModel.isStoragePermissionGranted.observe(this) {
-            if(it){
-                val photoPath = MediaHelper.getLatestPhotoPath(this)
-                photoPath?.let {
-                    val recentPhotoViewModel =
-                        ViewModelProvider(this)[RecentPhotoViewModel::class.java]
+            val recentPhotoViewModel =
+                ViewModelProvider(this)[RecentPhotoViewModel::class.java]
 
-                    val bitmap = BitmapFactory.decodeFile(photoPath)
-
-                    bitmap?.let {
-                        recentPhotoViewModel.setRecentPhoto(bitmap)
-                    }
-                }
-            }
+            recentPhotoViewModel.updateRecentPhoto(this)
         }
 
         permissionViewModel.setCameraPermissionGranted(PermissionHelper.isCameraPermissionGranted(this))
@@ -396,6 +387,12 @@ class CaptureActivity : AppCompatActivity() {
         super.onResume()
         binding.permissionViewModel?.setCameraPermissionGranted(PermissionHelper.isCameraPermissionGranted(this))
         binding.permissionViewModel?.setStoragePermissionGranted(PermissionHelper.isReadExternalStoragePermissionGranted(this))
+
+        // update recent photo
+        val recentPhotoViewModel =
+            ViewModelProvider(this)[RecentPhotoViewModel::class.java]
+
+        recentPhotoViewModel.updateRecentPhoto(this)
     }
 
     override fun onDestroy() {

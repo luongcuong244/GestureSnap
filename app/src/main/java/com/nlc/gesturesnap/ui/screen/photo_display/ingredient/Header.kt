@@ -16,13 +16,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.helper.AppConstant
 
 @Composable
 fun BoxScope.Header(){
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
+            .height(AppConstant.APP_BAR_HEIGHT)
             .background(color = colorResource(R.color.gray_white))
             .pointerInput(Unit) {}
             .drawBehind {

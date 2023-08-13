@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.helper.AppConstant
 
@@ -31,10 +33,25 @@ fun PhotoDeletionDialog(
     onCancel: () -> Unit,
     onDelete: () -> Unit
 ){
+
+    val backgroundColor = colorResource(R.color.black_500)
+    val defaultSystemBarsColor = colorResource(R.color.gray_white)
+
+    val systemUiController = rememberSystemUiController()
+
+    DisposableEffect(Unit){
+
+        systemUiController.setSystemBarsColor(backgroundColor)
+
+        onDispose {
+            systemUiController.setSystemBarsColor(defaultSystemBarsColor)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.black_500))
+            .background(backgroundColor)
             .clickable {
                 onCancel()
             }
