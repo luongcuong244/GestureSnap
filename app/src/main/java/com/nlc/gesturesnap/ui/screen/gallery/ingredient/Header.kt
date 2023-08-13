@@ -19,6 +19,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.ui.screen.gallery.GalleryActivity
 
 @Composable
@@ -29,7 +30,7 @@ fun Header(activityActions: GalleryActivity.Actions){
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
+            .height(AppConstant.APP_BAR_HEIGHT)
             .background(color = colorResource(R.color.gray_white))
             .pointerInput(Unit) {}
             .padding(15.dp, 5.dp)

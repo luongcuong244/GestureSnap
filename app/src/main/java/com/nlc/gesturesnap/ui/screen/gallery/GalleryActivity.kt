@@ -14,38 +14,27 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.helper.MediaHelper
 import com.nlc.gesturesnap.helper.PermissionHelper
 import com.nlc.gesturesnap.listener.PhotoDeleteListener
 import com.nlc.gesturesnap.model.SelectablePhoto
 import com.nlc.gesturesnap.ui.component.PhotoDeletionDialog
-import com.nlc.gesturesnap.ui.screen.gallery.ingredient.BackButton
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.BottomBar
-import com.nlc.gesturesnap.ui.screen.gallery.ingredient.ChoiceButton
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.Header
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.PhotoDisplayFragmentView
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.PhotosList
@@ -226,13 +215,11 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
     }
 }
 
-val bottomBarHeight = 50.dp
-
 @Composable
 fun GalleryActivityComposeScreen(activityActions: GalleryActivity.Actions, fragmentManager: FragmentManager, galleryViewModel: GalleryViewModel = viewModel()){
 
     val bottomBarTranslationValue by animateDpAsState(
-        targetValue = if(galleryViewModel.isSelectable.value) 0.dp else bottomBarHeight,
+        targetValue = if(galleryViewModel.isSelectable.value) 0.dp else AppConstant.BOTTOM_BAR_HEIGHT,
         label = ""
     )
 
@@ -280,21 +267,4 @@ fun GalleryActivityComposeScreen(activityActions: GalleryActivity.Actions, fragm
             PhotoDisplayFragmentView(fragmentManager)
         }
     }
-}
-
-@Composable
-fun OverlayBackground(){
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        colorResource(id = R.color.black_700),
-                        Color.Transparent
-                    )
-                )
-            )
-    )
 }
