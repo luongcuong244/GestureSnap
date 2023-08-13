@@ -67,7 +67,14 @@ class GalleryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val allPhotos = MediaHelper.getAllPhotos(this).map {
-            SelectablePhoto(it.path, it.uri)
+            SelectablePhoto(
+                path = it.path,
+                uri = it.uri,
+                name = it.name,
+                size = it.size,
+                dateTaken = it.dateTaken,
+                resolution = it.resolution
+            )
         }
 
         val galleryViewModel =

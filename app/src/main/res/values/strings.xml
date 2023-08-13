@@ -46,4 +46,11 @@
     <string name="no_camera_available_warning">No camera is available now</string>
     <string name="no_camera_available_detailed_description">Please ensure that your device\'s cameras are functioning properly</string>
     <string name="one_camera_available_warning">Your device has one camera only</string>
+
+    <string name="details">Details</string>
+    <string name="name">Name</string>
+    <string name="time">Time</string>
+    <string name="resolution">Resolution</string>
+    <string name="size">Size</string>
+    <string name="path">Path</string>
 </resources>

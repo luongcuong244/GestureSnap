@@ -4,10 +4,15 @@ import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
+import android.util.Size
 import com.nlc.gesturesnap.model.PhotoInfo
+import java.io.File
+import java.util.Date
 
 object MediaHelper {
 
@@ -77,6 +82,7 @@ object MediaHelper {
         val projection = arrayOf(
             MediaStore.Images.Media._ID,
             MediaStore.Images.Media.DATA,
+            MediaStore.Images.Media.DATE_TAKEN
         )
 
         val cursor =
@@ -95,7 +101,32 @@ object MediaHelper {
 
             val photoPath = cursor.getString(1)
 
-            photos.add(PhotoInfo(photoPath, photoUri))
+            val file = File(photoPath)
+
+            val options = BitmapFactory.Options()
+            options.inJustDecodeBounds = true
+            BitmapFactory.decodeFile(photoPath, options)
+
+            var photoResolution = Size(0, 0)
+
+            if(options.outHeight > 0 && options.outWidth > 0){
+                photoResolution = Size(options.outWidth, options.outHeight)
+            }
+
+            val dateTaken = cursor.getLong(2)
+
+            photos.add(
+                PhotoInfo(
+                    path = photoPath,
+                    uri = photoUri,
+                    name = file.name,
+                    size = file.length(),
+                    dateTaken = Date(if(dateTaken > 0) dateTaken else file.lastModified()),
+                    resolution = photoResolution
+                )
+            )
+
+            Log.d("DAGDAGGD","DATA: ${if(dateTaken > 0) dateTaken else file.lastModified()}" )
         }
         cursor.close()
 

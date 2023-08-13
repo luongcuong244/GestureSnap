@@ -13,6 +13,8 @@ class PhotoDisplayViewModel : ViewModel() {
 
     val isOnlyDisplayPhoto = mutableStateOf(false)
 
+    val isPhotoDetailDialogVisible = mutableStateOf(false)
+
     fun setFragmentArgument(argument: PhotoDisplayFragment.Argument){
         this.fragmentArgument.value = argument
     }
@@ -23,5 +25,9 @@ class PhotoDisplayViewModel : ViewModel() {
 
     fun setIsOnlyDisplayPhoto(value: Boolean){
         isOnlyDisplayPhoto.value = value
+    }
+
+    fun setPhotoDetailDialogVisible(value: Boolean){
+        isPhotoDetailDialogVisible.value = value
     }
 }

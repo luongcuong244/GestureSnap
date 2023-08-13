@@ -38,6 +38,7 @@ import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.BottomBar
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Header
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.InteractiveView
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Photo
+import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.PhotoDetailDialog
 import com.nlc.gesturesnap.view_model.photo_display.PhotoDisplayViewModel
 import com.nlc.gesturesnap.view_model.shared.PhotoDisplayFragmentStateViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -139,6 +140,7 @@ fun PhotoDisplayComposeScreen(){
         ) {
             InteractiveView()
             ViewContainer()
+            PhotoDetailDialog()
         }
     }
 }
