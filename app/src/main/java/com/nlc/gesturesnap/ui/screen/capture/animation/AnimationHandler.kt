@@ -14,6 +14,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.databinding.ActivityCaptureBinding
+import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.model.enums.CameraOption
 import com.nlc.gesturesnap.model.enums.FlashOption
 import com.nlc.gesturesnap.model.enums.TimerOption
@@ -60,7 +61,7 @@ class AnimationHandler(private val context: Context, private val binding: Activi
                     }
 
                     textView.setOnClickListener {
-                        binding.timerViewModel?.setTimerOption(timerOption)
+                        binding.timerViewModel?.setAndSaveTimerOption(timerOption)
                         binding.substituteItemButton.setImageDrawable(ContextCompat.getDrawable(context, timerOption.icon))
                         hideMenuBar(CameraOption.TIMER_OPTION)
                     }
@@ -97,7 +98,7 @@ class AnimationHandler(private val context: Context, private val binding: Activi
                     }
 
                     textView.setOnClickListener {
-                        binding.cameraModeViewModel?.switchFlashMode(flashOption)
+                        binding.cameraModeViewModel?.setAndSaveFlashMode(flashOption)
                         binding.substituteItemButton.setImageDrawable(ContextCompat.getDrawable(context, flashOption.icon))
                         hideMenuBar(CameraOption.FLASH_OPTION)
                     }
@@ -226,12 +227,10 @@ class AnimationHandler(private val context: Context, private val binding: Activi
 
     private fun runMenuBarAnimation(startPosition: Int, endPosition: Int, startWidth: Int, endWidth: Int, onAnimationEnd : (() -> Unit)? = null){
 
-        val duration = 200L
-
         val layoutParams = binding.menuBar.layoutParams
 
         val widthAnimator: ValueAnimator = ValueAnimator.ofInt(startWidth, endWidth)
-        widthAnimator.duration = duration
+        widthAnimator.duration = AppConstant.CAMERA_MODE_ANIMATION_DURATION_MILLIS
         widthAnimator.interpolator = LinearInterpolator()
         widthAnimator.addUpdateListener {
             val value = it.animatedValue as Int
@@ -244,7 +243,7 @@ class AnimationHandler(private val context: Context, private val binding: Activi
 
         if(startPosition != endPosition){
             positionAnimator = ValueAnimator.ofFloat(0f, 1f)
-            positionAnimator.duration = duration
+            positionAnimator.duration = AppConstant.CAMERA_MODE_ANIMATION_DURATION_MILLIS
             positionAnimator.interpolator = LinearInterpolator()
             positionAnimator.addUpdateListener {
                 val fraction = it.animatedValue as Float

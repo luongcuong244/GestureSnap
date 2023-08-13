@@ -4,6 +4,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 object AppConstant {
+
+    const val GESTURE_OPTION_INDEX_KEY = "gesture_option_index_key"
+
+    const val TIMER_MODE_INDEX_KEY = "timer_mode_index_key"
+    const val GRID_MODE_VALUE_KEY = "grid_mode_value_key"
+    const val ASPECT_RATIO_MODE_VALUE_KEY = "aspect_ratio_mode_value_key"
+    const val FLASH_MODE_INDEX_KEY = "flash_mode_index_key"
+    const val HAND_TRACKING_MODE_VALUE_KEY = "hand_tracking_mode_value_key"
+    const val CAMERA_ORIENTATION_VALUE_KEY = "camera_orientation_value_key"
+
+    const val HAND_DETECTING_TIME_IN_MILLI = 3000L
+
+    const val CAMERA_MODE_ANIMATION_DURATION_MILLIS = 200L
+
     const val ANIMATION_DURATION_MILLIS = 300
 
     const val MIN_PHOTO_SCALE = 0.8f

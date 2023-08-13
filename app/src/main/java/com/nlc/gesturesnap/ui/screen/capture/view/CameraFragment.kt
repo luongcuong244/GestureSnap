@@ -5,6 +5,8 @@ import android.content.res.Configuration
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -28,6 +30,7 @@ import com.nlc.gesturesnap.view_model.capture.GestureDetectViewModel
 import com.nlc.gesturesnap.view_model.capture.PermissionViewModel
 import com.nlc.gesturesnap.view_model.capture.RecentPhotoViewModel
 import com.nlc.gesturesnap.view_model.capture.TimerViewModel
+import kotlinx.coroutines.delay
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
@@ -53,8 +56,9 @@ class CameraFragment : Fragment(),
     private lateinit var gestureRecognizerHelper: GestureRecognizerHelper
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
-    private var camera: Camera? = null
+    private var cameraSelector: CameraSelector? = null
     private var cameraProvider: ProcessCameraProvider? = null
+    private var aspectRatio: Int? = null
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundExecutor: ExecutorService
@@ -80,6 +84,11 @@ class CameraFragment : Fragment(),
 
         // Start the GestureRecognizerHelper again when users come back
         // to the foreground.
+
+        cameraProvider?.let {
+            bindCameraUseCases(AppConstant.ANIMATION_DURATION_MILLIS.toLong())
+        }
+
         backgroundExecutor.execute {
             if (gestureRecognizerHelper.isClosed()) {
 
@@ -90,6 +99,9 @@ class CameraFragment : Fragment(),
 
     override fun onPause() {
         super.onPause()
+
+        cameraProvider?.unbindAll()
+
         if (this::gestureRecognizerHelper.isInitialized) {
             // Close the Gesture Recognizer helper and release resources
             backgroundExecutor.execute { gestureRecognizerHelper.clearGestureRecognizer() }
@@ -144,7 +156,17 @@ class CameraFragment : Fragment(),
 
         cameraModeViewModel.flashOption.observe(requireActivity()) {
             if(cameraProvider != null){
-                bindCameraUseCases()
+                setFlashMode(it.value)
+            }
+        }
+
+        gestureDetectViewModel.shouldRunHandTracking.observe(requireActivity()) {
+            if(cameraProvider != null){
+                if(it)
+                    bindImageAnalyzer()
+                else {
+                    unbindImageAnalyzer()
+                }
             }
         }
 
@@ -201,29 +223,29 @@ class CameraFragment : Fragment(),
 
     // Declare and bind preview, capture and analysis use cases
     @SuppressLint("UnsafeOptInUsageError", "RestrictedApi")
-    private fun bindCameraUseCases() {
+    private fun bindCameraUseCases(delay: Long = 0L) {
 
         val cameraModeViewModel = ViewModelProvider(requireActivity())[CameraModeViewModel::class.java]
 
-        val aspectRatio = cameraModeViewModel.cameraAspectRatio.value ?: AspectRatio.RATIO_4_3
+        aspectRatio = cameraModeViewModel.cameraAspectRatio.value ?: AspectRatio.RATIO_4_3
 
         // CameraProvider
         val cameraProvider = cameraProvider
             ?: throw IllegalStateException("Camera initialization failed.")
 
-        val cameraOrientation = cameraModeViewModel.cameraOrientation.value?.value ?: CameraSelector.LENS_FACING_BACK
+        val cameraOrientation = cameraModeViewModel.cameraOrientation.value ?: CameraSelector.LENS_FACING_BACK
 
-        val cameraSelector =
+        cameraSelector =
             CameraSelector.Builder().requireLensFacing(cameraOrientation).build()
 
         // Preview. Only using the 4:3 ratio because this is the closest to our models
-        preview = Preview.Builder().setTargetAspectRatio(aspectRatio)
+        preview = Preview.Builder().setTargetAspectRatio(aspectRatio!!)
             .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
             .build()
 
         // ImageAnalysis. Using RGBA 8888 to match how our models work
         imageAnalyzer =
-            ImageAnalysis.Builder().setTargetAspectRatio(aspectRatio)
+            ImageAnalysis.Builder().setTargetAspectRatio(aspectRatio!!)
                 .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
@@ -238,27 +260,73 @@ class CameraFragment : Fragment(),
         val flashMode = cameraModeViewModel.flashOption.value?.value ?: ImageCapture.FLASH_MODE_OFF
 
         imageCapture = ImageCapture.Builder()
-            .setTargetAspectRatio(aspectRatio)
+            .setTargetAspectRatio(aspectRatio!!)
             .setFlashMode(flashMode)
             .build()
 
-        // Must unbind the use-cases before rebinding them
-        cameraProvider.unbindAll()
 
-        try {
-            // A variable number of use-cases can be passed here -
-            // camera provides access to CameraControl & CameraInfo
-            camera = cameraProvider.bindToLifecycle(
-                viewLifecycleOwner, cameraSelector, preview, imageAnalyzer, imageCapture
-            )
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed(
+            {
+                // Must unbind the use-cases before rebinding them
+                cameraProvider.unbindAll()
+                try {
+                    // A variable number of use-cases can be passed here -
+                    // camera provides access to CameraControl & CameraInfo
+                    cameraProvider.bindToLifecycle(
+                        viewLifecycleOwner, cameraSelector!!, preview, imageAnalyzer, imageCapture
+                    )
 
-            // Attach the viewfinder's surface provider to preview use case
-            preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
-        } catch (exc: Exception) {
-            Log.e(TAG, "Use case binding failed", exc)
-        } finally {
-            cameraModeViewModel.setShouldRefreshCamera(true)
+                    // Attach the viewfinder's surface provider to preview use case
+                    preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
+                } catch (exc: Exception) {
+                    Log.e(TAG, "Use case binding failed", exc)
+                } finally {
+                    cameraModeViewModel.setShouldRefreshCamera(true)
+                }
+            },
+            delay
+        )
+    }
+
+    private fun setFlashMode(flashMode: Int) : Boolean{
+        if(cameraProvider == null || cameraSelector == null || aspectRatio == null){
+            return false
         }
+
+        // rebind imageCapture
+
+        cameraProvider?.unbind(imageCapture)
+
+        imageCapture = ImageCapture.Builder()
+            .setTargetAspectRatio(aspectRatio!!)
+            .setFlashMode(flashMode)
+            .build()
+
+        cameraProvider?.bindToLifecycle(
+            viewLifecycleOwner, cameraSelector!!, imageCapture
+        )
+
+        return true
+    }
+
+    private fun bindImageAnalyzer(){
+        if(imageAnalyzer == null){
+            return
+        }
+
+        unbindImageAnalyzer()
+
+        cameraProvider?.bindToLifecycle(
+            viewLifecycleOwner, cameraSelector!!, imageAnalyzer
+        )
+    }
+
+    private fun unbindImageAnalyzer(){
+        if(imageAnalyzer == null){
+            return
+        }
+        cameraProvider?.unbind(imageAnalyzer)
     }
 
     private fun recognizeHand(imageProxy: ImageProxy) {
@@ -282,6 +350,12 @@ class CameraFragment : Fragment(),
     ) {
         activity?.runOnUiThread {
             if (_fragmentCameraBinding != null) {
+
+                if(fragmentCameraBinding.gestureDetectViewModel?.shouldRunHandTracking?.value == false){
+                    fragmentCameraBinding.overlay.clear()
+                    return@runOnUiThread
+                }
+
                 // Show result of recognized gesture
                 val gestureCategories = resultBundle.results.first().gestures()
 
@@ -368,11 +442,14 @@ class CameraFragment : Fragment(),
                         "Can't take a photo. Something went wrong!",
                         Toast.LENGTH_SHORT
                     ).show()
+                    Log.e(TAG, exception.toString())
                     super.onError(exception)
                 }
 
                 override fun onCaptureSuccess(image: ImageProxy) {
                     super.onCaptureSuccess(image)
+
+                    Log.d(TAG, "Capture Success")
 
                     val recentPhotoViewModel =
                         ViewModelProvider(requireActivity())[RecentPhotoViewModel::class.java]

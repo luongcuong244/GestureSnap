@@ -18,6 +18,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,6 +45,7 @@ import com.nlc.gesturesnap.ui.component.PhotoDeletionDialog
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.BackButton
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.BottomBar
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.ChoiceButton
+import com.nlc.gesturesnap.ui.screen.gallery.ingredient.Header
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.PhotoDisplayFragmentView
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.PhotosList
 import com.nlc.gesturesnap.ui.screen.photo_display.PhotoDisplayFragment
@@ -202,15 +204,19 @@ fun GalleryActivityComposeScreen(activityActions: GalleryActivity.Actions, fragm
             Modifier
                 .fillMaxSize()
         ) {
-            Box(
+            Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxSize(),
             ) {
-                PhotosList(bottomBarTranslationValue)
-                BottomBar(activityActions, bottomBarTranslationValue)
+                Header(activityActions)
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    PhotosList(bottomBarTranslationValue)
+                    BottomBar(activityActions, bottomBarTranslationValue)
+                }
             }
-            OverlayBackground()
-            Header(activityActions)
             
             if(galleryViewModel.isPhotoDeletionDialogVisible.value){
                 PhotoDeletionDialog(
@@ -251,24 +257,4 @@ fun OverlayBackground(){
                 )
             )
     )
-}
-
-@Composable
-fun BoxScope.Header(activityActions: GalleryActivity.Actions){
-
-    val hideChoiceButton = Build.VERSION.SDK_INT == Build.VERSION_CODES.Q
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(15.dp)
-            .align(Alignment.TopCenter),
-        horizontalArrangement = if(hideChoiceButton) Arrangement.Start else Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        BackButton(activityActions)
-        if(!hideChoiceButton){
-            ChoiceButton()
-        }
-    }
 }

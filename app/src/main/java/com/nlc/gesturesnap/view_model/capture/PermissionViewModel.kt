@@ -9,11 +9,19 @@ class PermissionViewModel : ViewModel() {
     private val _isCameraPermissionGranted = MutableLiveData<Boolean>()
     private val _isStoragePermissionGranted = MutableLiveData<Boolean>()
 
-    private val _isCameraPermissionDialogShowing = MutableLiveData<Boolean>()
-    private val _isStoragePermissionDialogShowing = MutableLiveData<Boolean>()
+    private val _isCameraPermissionDialogShowing = MutableLiveData<Boolean>().apply {
+        this.value = false
+    }
+    private val _isStoragePermissionDialogShowing = MutableLiveData<Boolean>().apply {
+        this.value = false
+    }
 
-    private val _isCameraPermissionTipDialogShowing = MutableLiveData<Boolean>()
-    private val _isStoragePermissionTipDialogShowing = MutableLiveData<Boolean>()
+    private val _isCameraPermissionTipDialogShowing = MutableLiveData<Boolean>().apply {
+        this.value = false
+    }
+    private val _isStoragePermissionTipDialogShowing = MutableLiveData<Boolean>().apply {
+        this.value = false
+    }
 
     val isCameraPermissionGranted : LiveData<Boolean> = _isCameraPermissionGranted
     val isStoragePermissionGranted : LiveData<Boolean> = _isStoragePermissionGranted

@@ -8,6 +8,7 @@
         <import type="com.nlc.gesturesnap.model.enums.GestureCategory"/>
         <import type="androidx.camera.core.AspectRatio"/>
         <import type="com.nlc.gesturesnap.model.enums.CameraOption"/>
+        <import type="com.nlc.gesturesnap.model.enums.TimerOption"/>
         <variable
             name="captureActivity"
             type="com.nlc.gesturesnap.ui.screen.capture.CaptureActivity" />
@@ -41,7 +42,6 @@
             android:id="@+id/fragment_container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginBottom="15dp"
             app:layout_constraintBottom_toTopOf="@id/option_bar_container"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -51,7 +51,6 @@
             android:id="@+id/hand_gesture_progress_container"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginBottom="@dimen/small_padding"
             android:rotation="@{-screenRotation.intValue()}"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -78,8 +77,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/small_button_size"
             android:layout_marginHorizontal="25dp"
-            app:layout_constraintBottom_toTopOf="@id/capture_button"
-            android:layout_marginBottom="15dp">
+            app:layout_constraintBottom_toTopOf="@id/capture_button">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/menu_bar"
@@ -137,7 +135,7 @@
                     android:rotation="@{-screenRotation.intValue()}"
                     android:background="@drawable/black_circle"
                     android:src="@{ cameraModeViewModel.isOpenGrid ? @drawable/ic_grid_on : @drawable/ic_grid_off }"
-                    android:onClick="@{() -> cameraModeViewModel.switchGridMode()}">
+                    android:onClick="@{() -> cameraModeViewModel.switchAndSaveGridMode()}">
                 </ImageButton>
 
                 <ImageButton
@@ -147,7 +145,7 @@
                     android:rotation="@{-screenRotation.intValue()}"
                     android:background="@drawable/black_circle"
                     android:src="@{cameraModeViewModel.cameraAspectRatio == AspectRatio.RATIO_4_3 ? @drawable/ic_ratio_4_3 : @drawable/ic_ratio_16_9}"
-                    android:onClick="@{() -> cameraModeViewModel.switchAspectRatio()}">
+                    android:onClick="@{() -> cameraModeViewModel.switchAndSaveAspectRatio()}">
                 </ImageButton>
 
                 <ImageButton
@@ -166,8 +164,8 @@
                     android:layout_height="@dimen/small_button_size"
                     android:rotation="@{-screenRotation.intValue()}"
                     android:background="@drawable/black_circle"
-                    android:src="@{gestureDetectViewModel.isDrawHand ? @drawable/ic_polylines_yellow : @drawable/ic_polylines}"
-                    android:onClick="@{() -> gestureDetectViewModel.switchIsDrawHandValue()}">
+                    android:src="@{gestureDetectViewModel.isDrawHandTrackingLine ? @drawable/ic_polylines_yellow : @drawable/ic_polylines}"
+                    android:onClick="@{() -> gestureDetectViewModel.switchAndSaveIsDrawHandTrackingLineValue()}">
                 </ImageButton>
 
             </com.google.android.flexbox.FlexboxLayout>
@@ -178,7 +176,6 @@
             android:id="@+id/recycle_view_container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="10dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent">
@@ -200,7 +197,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            android:onClick="@{() -> timerViewModel.timerValue == 0 ? cameraFragment.takePhoto() : timerViewModel.startTimer()}"/>
+            android:onClick="@{() -> captureActivity.onClickCaptureButton()}"/>
 
         <ImageButton
             android:id="@+id/flip_camera_button"
@@ -211,9 +208,23 @@
             app:layout_constraintBottom_toBottomOf="parent"
             android:background="@drawable/black_circle"
             android:src="@drawable/ic_flip_camera"
-            android:layout_marginBottom="25dp"
+            android:alpha="@{cameraModeViewModel.availableCameraOrientations.size() > 1 ? 1F : 0.5F}"
+            android:layout_marginBottom="27dp"
             android:layout_marginStart="25dp"
-            android:onClick="@{() -> cameraModeViewModel.switchCameraOrientation()}"/>
+            android:onClick="@{() -> cameraModeViewModel.switchAndSaveCameraOrientation()}"/>
+
+        <include
+            android:id="@+id/camera_permission_warning"
+            layout="@layout/camera_permission_warning"
+            android:visibility="@{(!permissionViewModel.isCameraPermissionDialogShowing &amp;&amp; !permissionViewModel.isCameraPermissionTipDialogShowing &amp;&amp; !permissionViewModel.isCameraPermissionGranted &amp;&amp; cameraModeViewModel.availableCameraOrientations.size() > 0) ? View.VISIBLE : View.GONE}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"
+            app:onClick="@{() -> permissionViewModel.setCameraPermissionDialogShowing(true)}"/>
+
+        <include
+            android:id="@+id/no_camera_available_warning"
+            layout="@layout/no_camera_available_warning"
+            android:visibility="@{cameraModeViewModel.availableCameraOrientations.size() > 0 ? View.GONE : View.VISIBLE}"
+            app:screenRotationValue="@{-screenRotation.intValue()}"/>
 
         <ImageButton
             android:id="@+id/recent_photo_button"
@@ -225,7 +236,7 @@
             android:onClick="@{() -> captureActivity.switchToGalleryActivity()}"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="25dp"
+            android:layout_marginBottom="22.5dp"
             android:layout_marginEnd="25dp"/>
 
         <include
@@ -267,13 +278,6 @@
             app:screenRotationValue="@{-screenRotation.intValue()}"
             app:onClickApplyButton="@{() -> captureActivity.closeDialogAndOpenAppInfo()}"
             app:onClickCancelButton="@{() -> permissionViewModel.setStoragePermissionTipDialogShowing(false)}"/>
-
-        <include
-            android:id="@+id/camera_permission_warning"
-            layout="@layout/camera_permission_warning"
-            android:visibility="@{(!permissionViewModel.isCameraPermissionDialogShowing &amp;&amp; !permissionViewModel.isCameraPermissionTipDialogShowing &amp;&amp; !permissionViewModel.isCameraPermissionGranted) ? View.VISIBLE : View.GONE}"
-            app:screenRotationValue="@{-screenRotation.intValue()}"
-            app:onClick="@{() -> permissionViewModel.setCameraPermissionDialogShowing(true)}"/>
 
         <RelativeLayout
             android:id="@+id/timer_text_container"
