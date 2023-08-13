@@ -40,6 +40,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.helper.MediaHelper
 import com.nlc.gesturesnap.helper.PermissionHelper
+import com.nlc.gesturesnap.listener.PhotoDeleteListener
 import com.nlc.gesturesnap.model.SelectablePhoto
 import com.nlc.gesturesnap.ui.component.PhotoDeletionDialog
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.BackButton
@@ -54,14 +55,17 @@ import com.nlc.gesturesnap.view_model.shared.PhotoDisplayFragmentStateViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.File
 
-class GalleryActivity : AppCompatActivity() {
+class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
 
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
 
     private lateinit var requestExternalPermissionLauncher: ActivityResultLauncher<String>
 
     private val condVarWaitState = ConditionVariable()
+
+    private val actions = Actions()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,8 +99,6 @@ class GalleryActivity : AppCompatActivity() {
             }
         }
 
-        val actions = Actions()
-
         setContent {
             MaterialTheme {
                 GalleryActivityComposeScreen(actions, supportFragmentManager)
@@ -105,7 +107,7 @@ class GalleryActivity : AppCompatActivity() {
 
         intentSenderLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
             if(it.resultCode == RESULT_OK) {
-                actions.updateAfterDeletingPhotosSuccessfully()
+                updateAfterDeletingPhotosSuccessfully()
             }
         }
 
@@ -178,18 +180,49 @@ class GalleryActivity : AppCompatActivity() {
                 }
             }
         }
+    }
 
-        fun updateAfterDeletingPhotosSuccessfully(){
-            val galleryViewModel =
-                ViewModelProvider(this@GalleryActivity)[GalleryViewModel::class.java]
+    private fun updateAfterDeletingPhotosSuccessfully(){
 
-            galleryViewModel.photos.removeIf {
-                it.isSelecting
-            }
+        closePhotoDisplayFragment()
 
-            galleryViewModel.setIsPhotoDeletionDialogVisible(false)
-            galleryViewModel.setIsSelectable(false)
+        val galleryViewModel =
+            ViewModelProvider(this@GalleryActivity)[GalleryViewModel::class.java]
+
+        galleryViewModel.photos.removeIf {
+            !File(it.path).exists()
         }
+
+        galleryViewModel.setIsPhotoDeletionDialogVisible(false)
+        galleryViewModel.setIsSelectable(false)
+    }
+
+    private fun closePhotoDisplayFragment(){
+        val galleryViewModel =
+            ViewModelProvider(this@GalleryActivity)[GalleryViewModel::class.java]
+
+        val fragmentManager = supportFragmentManager
+        val fragments = fragmentManager.fragments
+
+        fragments.forEach {
+            if(it is PhotoDisplayFragment){
+                it.closeFragment()
+                galleryViewModel.setFragmentArgument(PhotoDisplayFragment.Argument())
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    override fun deletePhotosWithApi30orLater(photoUri: Uri) {
+        actions.deletePhotosWithApi30orLater(listOf(photoUri))
+    }
+
+    override fun deletePhotoWithApi29(photoUri: Uri) {
+        actions.deletePhotoWithApi29(photoUri)
+    }
+
+    override fun deletePhotosWithApi28orOlder(photoUri: Uri) {
+        actions.deletePhotosWithApi28orOlder(listOf(photoUri))
     }
 }
 

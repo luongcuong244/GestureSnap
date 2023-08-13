@@ -1,5 +1,6 @@
 package com.nlc.gesturesnap.ui.screen.photo_display
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -32,7 +33,9 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nlc.gesturesnap.helper.AppConstant
+import com.nlc.gesturesnap.listener.PhotoDeleteListener
 import com.nlc.gesturesnap.model.PhotoInfo
+import com.nlc.gesturesnap.ui.component.PhotoDeletionDialog
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Background
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.BottomBar
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Header
@@ -120,15 +123,26 @@ class PhotoDisplayFragment : Fragment() {
         }
     }
 
-    private fun closeFragment(){
+    fun closeFragment(){
         val fragmentTransaction: FragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
         fragmentTransaction.remove(this)
         fragmentTransaction.commit()
     }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        val photoDisplayViewModel =
+            ViewModelProvider(this)[PhotoDisplayViewModel::class.java]
+
+        if (context is PhotoDeleteListener) {
+            photoDisplayViewModel.photoDeleteListener = context
+        }
+    }
 }
 
 @Composable
-fun PhotoDisplayComposeScreen(){
+fun PhotoDisplayComposeScreen(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -141,6 +155,25 @@ fun PhotoDisplayComposeScreen(){
             InteractiveView()
             ViewContainer()
             PhotoDetailDialog()
+
+            if(photoDisplayViewModel.isPhotoDeletionDialogVisible.value){
+                PhotoDeletionDialog(
+                    onCancel = {
+                        photoDisplayViewModel.setIsPhotoDeletionDialogVisible(false)
+                    },
+                    onDelete = {
+
+                        val uri = photoDisplayViewModel.fragmentArgument.value.photo.uri
+
+                        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.Q){
+                            photoDisplayViewModel.photoDeleteListener?.deletePhotoWithApi29(uri)
+                        }
+                        else if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q){
+                            photoDisplayViewModel.photoDeleteListener?.deletePhotosWithApi28orOlder(uri)
+                        }
+                    }
+                )
+            }
         }
     }
 }

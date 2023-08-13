@@ -3,9 +3,14 @@ package com.nlc.gesturesnap.view_model.photo_display
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.nlc.gesturesnap.listener.PhotoDeleteListener
 import com.nlc.gesturesnap.ui.screen.photo_display.PhotoDisplayFragment
 
 class PhotoDisplayViewModel : ViewModel() {
+
+    var photoDeleteListener : PhotoDeleteListener? = null
+
+    val isPhotoDeletionDialogVisible = mutableStateOf(false)
 
     val isFragmentOpen = MutableLiveData(false)
 
@@ -29,5 +34,9 @@ class PhotoDisplayViewModel : ViewModel() {
 
     fun setPhotoDetailDialogVisible(value: Boolean){
         isPhotoDetailDialogVisible.value = value
+    }
+
+    fun setIsPhotoDeletionDialogVisible(visible: Boolean){
+        isPhotoDeletionDialogVisible.value = visible
     }
 }
