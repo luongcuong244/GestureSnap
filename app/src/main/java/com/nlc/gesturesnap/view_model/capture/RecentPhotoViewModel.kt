@@ -3,11 +3,15 @@ package com.nlc.gesturesnap.view_model.capture
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.helper.Formatter
 import com.nlc.gesturesnap.helper.MediaHelper
+
 
 class RecentPhotoViewModel : ViewModel() {
     private val _recentPhoto = MutableLiveData<Bitmap>()
@@ -20,7 +24,12 @@ class RecentPhotoViewModel : ViewModel() {
         val bitmap = if(photoPath != null){
             BitmapFactory.decodeFile(photoPath)
         } else {
-            BitmapFactory.decodeResource(context.resources, R.drawable.gallery_frame)
+            val d: Drawable? = ContextCompat.getDrawable(context, R.drawable.gallery_frame)
+            if (d != null) {
+                Formatter.drawableToBitmap(d)
+            } else {
+                null
+            }
         }
 
         bitmap?.let {
