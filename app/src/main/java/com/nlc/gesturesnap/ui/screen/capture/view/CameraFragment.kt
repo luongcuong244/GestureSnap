@@ -2,38 +2,51 @@ package com.nlc.gesturesnap.ui.screen.capture.view
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.OrientationEventListener.ORIENTATION_UNKNOWN
+import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.camera.core.*
+import androidx.camera.core.AspectRatio
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.databinding.DataBindingUtil
-import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.databinding.FragmentCameraBinding
-import com.nlc.gesturesnap.helper.*
+import com.nlc.gesturesnap.extension.flipHorizontally
+import com.nlc.gesturesnap.extension.rotate
+import com.nlc.gesturesnap.helper.AppConstant
+import com.nlc.gesturesnap.helper.Formatter
+import com.nlc.gesturesnap.helper.GestureRecognizerHelper
+import com.nlc.gesturesnap.helper.MediaHelper
+import com.nlc.gesturesnap.helper.OrientationLiveData
+import com.nlc.gesturesnap.helper.PermissionHelper
 import com.nlc.gesturesnap.model.enums.GestureCategory
 import com.nlc.gesturesnap.view_model.capture.CameraModeViewModel
 import com.nlc.gesturesnap.view_model.capture.GestureDetectViewModel
 import com.nlc.gesturesnap.view_model.capture.PermissionViewModel
 import com.nlc.gesturesnap.view_model.capture.RecentPhotoViewModel
 import com.nlc.gesturesnap.view_model.capture.TimerViewModel
-import kotlinx.coroutines.delay
-import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -53,7 +66,7 @@ class CameraFragment : Fragment(),
 
     private var imageCapture: ImageCapture? = null
 
-    private lateinit var gestureRecognizerHelper: GestureRecognizerHelper
+    private var gestureRecognizerHelper: GestureRecognizerHelper? = null
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
     private var cameraSelector: CameraSelector? = null
@@ -90,9 +103,8 @@ class CameraFragment : Fragment(),
         }
 
         backgroundExecutor.execute {
-            if (gestureRecognizerHelper.isClosed()) {
-
-                gestureRecognizerHelper.setupGestureRecognizer()
+            if (gestureRecognizerHelper?.isClosed() == true) {
+                gestureRecognizerHelper?.setupGestureRecognizer()
             }
         }
     }
@@ -102,9 +114,9 @@ class CameraFragment : Fragment(),
 
         cameraProvider?.unbindAll()
 
-        if (this::gestureRecognizerHelper.isInitialized) {
+        if (gestureRecognizerHelper != null) {
             // Close the Gesture Recognizer helper and release resources
-            backgroundExecutor.execute { gestureRecognizerHelper.clearGestureRecognizer() }
+            backgroundExecutor.execute { gestureRecognizerHelper?.clearGestureRecognizer() }
         }
     }
 
@@ -173,6 +185,18 @@ class CameraFragment : Fragment(),
         relativeOrientation = OrientationLiveData(requireContext()).apply {
             observe(viewLifecycleOwner) { orientation ->
                 Log.d(TAG, "Orientation changed: $orientation")
+                if (orientation == ORIENTATION_UNKNOWN) {
+                    return@observe
+                }
+
+                val rotation = when (orientation) {
+                    in 45 until 135 -> Surface.ROTATION_270
+                    in 135 until 225 -> Surface.ROTATION_180
+                    in 225 until 315 -> Surface.ROTATION_90
+                    else -> Surface.ROTATION_0
+                }
+                preview?.targetRotation = rotation
+                imageCapture?.targetRotation = rotation
             }
         }
 
@@ -225,6 +249,10 @@ class CameraFragment : Fragment(),
     @SuppressLint("UnsafeOptInUsageError", "RestrictedApi")
     private fun bindCameraUseCases(delay: Long = 0L) {
 
+        if(activity == null){
+            return
+        }
+
         val cameraModeViewModel = ViewModelProvider(requireActivity())[CameraModeViewModel::class.java]
 
         aspectRatio = cameraModeViewModel.cameraAspectRatio.value ?: AspectRatio.RATIO_4_3
@@ -238,9 +266,12 @@ class CameraFragment : Fragment(),
         cameraSelector =
             CameraSelector.Builder().requireLensFacing(cameraOrientation).build()
 
+        val targetRotation = Formatter.orientationToSurfaceRotation(relativeOrientation.value ?: 0)
+
         // Preview. Only using the 4:3 ratio because this is the closest to our models
-        preview = Preview.Builder().setTargetAspectRatio(aspectRatio!!)
-            .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
+        preview = Preview.Builder()
+            .setTargetAspectRatio(aspectRatio!!)
+            .setTargetRotation(targetRotation)
             .build()
 
         // ImageAnalysis. Using RGBA 8888 to match how our models work
@@ -261,6 +292,8 @@ class CameraFragment : Fragment(),
 
         imageCapture = ImageCapture.Builder()
             .setTargetAspectRatio(aspectRatio!!)
+            .setTargetRotation(targetRotation)
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .setFlashMode(flashMode)
             .build()
 
@@ -294,12 +327,16 @@ class CameraFragment : Fragment(),
             return false
         }
 
+        val targetRotation = Formatter.orientationToSurfaceRotation(relativeOrientation.value ?: 0)
+
         // rebind imageCapture
 
         cameraProvider?.unbind(imageCapture)
 
         imageCapture = ImageCapture.Builder()
             .setTargetAspectRatio(aspectRatio!!)
+            .setTargetRotation(targetRotation)
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .setFlashMode(flashMode)
             .build()
 
@@ -330,8 +367,13 @@ class CameraFragment : Fragment(),
     }
 
     private fun recognizeHand(imageProxy: ImageProxy) {
-        gestureRecognizerHelper.recognizeLiveStream(
+        gestureRecognizerHelper?.recognizeLiveStream(
             imageProxy = imageProxy,
+            isFontCamera =
+                fragmentCameraBinding
+                    .cameraModeViewModel?.cameraOrientation?.value == (CameraSelector.LENS_FACING_FRONT
+                ?: true),
+            deviceRotation = relativeOrientation.value ?: 0
         )
     }
 
@@ -400,10 +442,7 @@ class CameraFragment : Fragment(),
     }
 
     override fun onError(error: String, errorCode: Int) {
-        activity?.runOnUiThread {
-            Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
-            //gestureRecognizerResultAdapter.updateResults(emptyList())
-        }
+        Log.d(TAG, error)
     }
 
     fun takePhoto() {
@@ -448,15 +487,21 @@ class CameraFragment : Fragment(),
 
                     Log.d(TAG, "Capture Success")
 
+                    val isFontCamera = fragmentCameraBinding
+                        .cameraModeViewModel?.cameraOrientation?.value == (CameraSelector.LENS_FACING_FRONT
+                        ?: true)
+
+                    val rotationDegrees = image.imageInfo.rotationDegrees.toFloat()
+
+                    var bitmap = image.toBitmap()
+                        .rotate(rotationDegrees)
+
+                    if(isFontCamera){
+                        bitmap = bitmap.flipHorizontally()
+                    }
+                    
                     val recentPhotoViewModel =
                         ViewModelProvider(requireActivity())[RecentPhotoViewModel::class.java]
-
-                    val planeProxy = image.planes[0]
-                    val buffer: ByteBuffer = planeProxy.buffer
-                    val bytes = ByteArray(buffer.remaining())
-                    buffer.get(bytes)
-
-                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 
                     recentPhotoViewModel.setRecentPhoto(bitmap)
 
@@ -466,16 +511,6 @@ class CameraFragment : Fragment(),
                     val photoUri = MediaHelper.createPhotoUri(requireContext(), "Pictures", photoName)
 
                     MediaHelper.savePhoto(requireContext(), bitmap, photoUri)
-
-                    MediaHelper.getLatestPhotoPath(requireContext())?.let {
-                        val rotation = relativeOrientation.value ?: 0
-                        val exifOrientation = computeExifOrientation(rotation, false)
-
-                        val exif = ExifInterface(it)
-                        exif.setAttribute(
-                            ExifInterface.TAG_ORIENTATION, exifOrientation.toString())
-                        exif.saveAttributes()
-                    }
 
                     image.close()
                 }

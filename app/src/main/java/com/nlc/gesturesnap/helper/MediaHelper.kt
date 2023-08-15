@@ -39,7 +39,9 @@ object MediaHelper {
     fun savePhoto(context: Context, photoBitmap: Bitmap, uri: Uri?): Boolean {
         return try {
             val outputStream = uri?.let { it -> context.contentResolver.openOutputStream(it) }
-            photoBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            if (outputStream != null) {
+                photoBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            }
             outputStream?.flush()
             outputStream?.close()
             true

@@ -116,6 +116,8 @@ class GestureRecognizerHelper(
     // Convert the ImageProxy to MP Image and feed it to GestureRecognizer.
     fun recognizeLiveStream(
         imageProxy: ImageProxy,
+        deviceRotation: Int,
+        isFontCamera: Boolean,
     ) {
         val frameTime = SystemClock.uptimeMillis()
 
@@ -128,12 +130,14 @@ class GestureRecognizerHelper(
 
         val matrix = Matrix().apply {
             // Rotate the frame received from the camera to be in the same direction as it'll be shown
-            postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
+            postRotate(imageProxy.imageInfo.rotationDegrees.toFloat() - deviceRotation.toFloat())
 
-            // flip image since we only support front camera
-            postScale(
-                -1f, 1f, imageProxy.width.toFloat(), imageProxy.height.toFloat()
-            )
+            // flip image since we only support front camera ??? :))
+            if(isFontCamera){
+                postScale(
+                    -1f, 1f, imageProxy.width.toFloat(), imageProxy.height.toFloat()
+                )
+            }
         }
 
         // Rotate bitmap to match what our model expects
