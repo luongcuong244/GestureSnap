@@ -432,6 +432,7 @@ class CameraFragment : Fragment(),
                     resultBundle.results.first(),
                     resultBundle.inputImageHeight,
                     resultBundle.inputImageWidth,
+                    resultBundle.deviceRotation,
                     RunningMode.LIVE_STREAM
                 )
 
@@ -499,7 +500,7 @@ class CameraFragment : Fragment(),
                     if(isFontCamera){
                         bitmap = bitmap.flipHorizontally()
                     }
-                    
+
                     val recentPhotoViewModel =
                         ViewModelProvider(requireActivity())[RecentPhotoViewModel::class.java]
 

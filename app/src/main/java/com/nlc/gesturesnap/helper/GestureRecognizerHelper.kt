@@ -44,6 +44,8 @@ class GestureRecognizerHelper(
     // will not change, a lazy val would be preferable.
     private var gestureRecognizer: GestureRecognizer? = null
 
+    private var deviceRotation : Int = 0
+
     init {
         setupGestureRecognizer()
     }
@@ -151,6 +153,8 @@ class GestureRecognizerHelper(
             true
         )
 
+        this.deviceRotation = deviceRotation
+
         // Convert the input Bitmap object to an MPImage object to run inference
         val mpImage = BitmapImageBuilder(rotatedBitmap).build()
 
@@ -179,7 +183,7 @@ class GestureRecognizerHelper(
 
         gestureRecognizerListener?.onResults(
             ResultBundle(
-                listOf(result), inferenceTime, input.height, input.width
+                listOf(result), inferenceTime, input.height, input.width, deviceRotation
             )
         )
     }
@@ -210,6 +214,7 @@ class GestureRecognizerHelper(
         val inferenceTime: Long,
         val inputImageHeight: Int,
         val inputImageWidth: Int,
+        val deviceRotation: Int
     )
 
     interface GestureRecognizerListener {
