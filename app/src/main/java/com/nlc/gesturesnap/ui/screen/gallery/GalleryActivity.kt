@@ -109,6 +109,11 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
         }
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        actions.popActivity()
+    }
+
     inner class Actions {
 
         fun popActivity(){
