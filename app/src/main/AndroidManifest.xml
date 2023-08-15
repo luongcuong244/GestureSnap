@@ -35,13 +35,16 @@
         <activity
             android:name=".ui.screen.capture.CaptureActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.GestureSnap.NoActionBar" />
         <activity
             android:name=".ui.screen.gallery.GalleryActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".ui.screen.splash_screen.SplashActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.App.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
