@@ -29,6 +29,7 @@ fun PhotoDisplayFragmentView(
                 if(galleryViewModel.fragmentArgument.value.photo.path.isNotEmpty()){
                     fragmentManager.beginTransaction()
                         .replace(it.id, PhotoDisplayFragment.newInstance(galleryViewModel.fragmentArgument.value))
+                        .addToBackStack(null)
                         .commit()
                 }
             }
