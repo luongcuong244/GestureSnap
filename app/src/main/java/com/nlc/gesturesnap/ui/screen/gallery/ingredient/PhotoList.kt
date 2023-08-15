@@ -217,9 +217,21 @@ fun isFullyVisibleItem(listState: LazyGridState, index: Int) : Boolean{
 
     if(visibleItemsInfo.isEmpty()) return false
 
-    val offset = visibleItemsInfo.find {
+    val item = visibleItemsInfo.find {
         it.index == index
-    }?.offset ?: return false
+    } ?: return false
 
-    return offset.y >= 0
+    // item is on top of the Lazy Vertical Grid
+    if(item.offset.y < 0){
+        return false
+    }
+
+    val viewportHeight = layoutInfo.viewportEndOffset + layoutInfo.viewportStartOffset
+
+    // item is on bottom of the Lazy Vertical Grid
+    if (item.offset.y + item.size.height > viewportHeight) {
+        return false
+    }
+
+    return true
 }
