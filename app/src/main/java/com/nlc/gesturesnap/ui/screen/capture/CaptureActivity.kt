@@ -3,7 +3,6 @@ package com.nlc.gesturesnap.ui.screen.capture
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
@@ -23,17 +22,17 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nlc.gesturesnap.R
+import com.nlc.gesturesnap.ads.MyApplication
 import com.nlc.gesturesnap.databinding.ActivityCaptureBinding
 import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.helper.LocalStorageHelper
-import com.nlc.gesturesnap.helper.MediaHelper
 import com.nlc.gesturesnap.helper.OrientationLiveData
 import com.nlc.gesturesnap.helper.PermissionHelper
-import com.nlc.gesturesnap.ui.screen.capture.animation.AnimationHandler
-import com.nlc.gesturesnap.ui.screen.capture.component.GestureDetectAdapter
 import com.nlc.gesturesnap.model.enums.CameraOption
 import com.nlc.gesturesnap.model.enums.FlashOption
 import com.nlc.gesturesnap.model.enums.TimerOption
+import com.nlc.gesturesnap.ui.screen.capture.animation.AnimationHandler
+import com.nlc.gesturesnap.ui.screen.capture.component.GestureDetectAdapter
 import com.nlc.gesturesnap.ui.screen.capture.responsive.PositionCalculator
 import com.nlc.gesturesnap.ui.screen.capture.view.CameraFragment
 import com.nlc.gesturesnap.ui.screen.gallery.GalleryActivity
@@ -99,6 +98,16 @@ class CaptureActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val application = application as? MyApplication
+
+        application?.showAdIfAvailable(
+            this@CaptureActivity,
+            object : MyApplication.OnShowAdCompleteListener {
+                override fun onShowAdComplete() {
+
+                }
+            })
 
         _binding = DataBindingUtil.setContentView(
             this, R.layout.activity_capture)
