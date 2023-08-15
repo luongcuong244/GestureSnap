@@ -14,19 +14,32 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.helper.MediaHelper
@@ -46,6 +59,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
+
 class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
 
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
@@ -55,6 +69,8 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
     private val condVarWaitState = ConditionVariable()
 
     private val actions = Actions()
+
+    private var mInterstitialAd: InterstitialAd? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,9 +130,29 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
         actions.popActivity()
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        val adRequest = AdRequest.Builder().build()
+
+        InterstitialAd.load(this@GalleryActivity,"ca-app-pub-3940256099942544/1033173712", adRequest, object : InterstitialAdLoadCallback() {
+            override fun onAdFailedToLoad(adError: LoadAdError) {
+                mInterstitialAd = null
+            }
+            override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                mInterstitialAd = interstitialAd
+            }
+        })
+    }
+
     inner class Actions {
 
         fun popActivity(){
+
+            if (mInterstitialAd != null) {
+                mInterstitialAd?.show(this@GalleryActivity)
+            }
+
             finish()
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
         }
@@ -248,6 +284,20 @@ fun GalleryActivityComposeScreen(activityActions: GalleryActivity.Actions, fragm
                     PhotosList(bottomBarTranslationValue)
                     BottomBar(activityActions, bottomBarTranslationValue)
                 }
+                AndroidView(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .background(colorResource(R.color.gray_white))
+                        .zIndex(1f),
+                    factory = {
+                        AdView(it).apply {
+                            setAdSize(AdSize.BANNER)
+                            adUnitId = "ca-app-pub-3940256099942544/6300978111"
+                            loadAd(AdRequest.Builder().build())
+                        }
+                    }
+                )
             }
             
             if(galleryViewModel.isPhotoDeletionDialogVisible.value){
