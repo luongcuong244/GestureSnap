@@ -44,6 +44,8 @@ class GestureRecognizerHelper(
     // will not change, a lazy val would be preferable.
     private var gestureRecognizer: GestureRecognizer? = null
 
+    private var deviceRotation : Int = 0
+
     init {
         setupGestureRecognizer()
     }
@@ -116,6 +118,8 @@ class GestureRecognizerHelper(
     // Convert the ImageProxy to MP Image and feed it to GestureRecognizer.
     fun recognizeLiveStream(
         imageProxy: ImageProxy,
+        deviceRotation: Int,
+        isFontCamera: Boolean,
     ) {
         val frameTime = SystemClock.uptimeMillis()
 
@@ -128,12 +132,14 @@ class GestureRecognizerHelper(
 
         val matrix = Matrix().apply {
             // Rotate the frame received from the camera to be in the same direction as it'll be shown
-            postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
+            postRotate(imageProxy.imageInfo.rotationDegrees.toFloat() - deviceRotation.toFloat())
 
-            // flip image since we only support front camera
-            postScale(
-                -1f, 1f, imageProxy.width.toFloat(), imageProxy.height.toFloat()
-            )
+            // flip image since we only support front camera ??? :))
+            if(isFontCamera){
+                postScale(
+                    -1f, 1f, imageProxy.width.toFloat(), imageProxy.height.toFloat()
+                )
+            }
         }
 
         // Rotate bitmap to match what our model expects
@@ -146,6 +152,8 @@ class GestureRecognizerHelper(
             matrix,
             true
         )
+
+        this.deviceRotation = deviceRotation
 
         // Convert the input Bitmap object to an MPImage object to run inference
         val mpImage = BitmapImageBuilder(rotatedBitmap).build()
@@ -175,7 +183,7 @@ class GestureRecognizerHelper(
 
         gestureRecognizerListener?.onResults(
             ResultBundle(
-                listOf(result), inferenceTime, input.height, input.width
+                listOf(result), inferenceTime, input.height, input.width, deviceRotation
             )
         )
     }
@@ -206,6 +214,7 @@ class GestureRecognizerHelper(
         val inferenceTime: Long,
         val inputImageHeight: Int,
         val inputImageWidth: Int,
+        val deviceRotation: Int
     )
 
     interface GestureRecognizerListener {

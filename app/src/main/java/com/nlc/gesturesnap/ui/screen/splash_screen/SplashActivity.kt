@@ -56,5 +56,7 @@ class SplashActivity : AppCompatActivity() {
     private fun navigateToCaptureScreen(){
         val intent = Intent(this, CaptureActivity :: class.java)
         startActivity(intent)
+
+        finish()
     }
 }
