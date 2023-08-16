@@ -1,8 +1,11 @@
 package com.nlc.gesturesnap.ui.screen.photo_display
 
+import android.R.attr.fragment
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,11 +26,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.IntSize
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
@@ -36,21 +37,19 @@ import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.listener.PhotoDeleteListener
 import com.nlc.gesturesnap.model.PhotoInfo
 import com.nlc.gesturesnap.ui.component.PhotoDeletionDialog
-import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Background
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.BottomBar
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Header
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.InteractiveView
-import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.Photo
 import com.nlc.gesturesnap.ui.screen.photo_display.ingredient.PhotoDetailDialog
 import com.nlc.gesturesnap.view_model.photo_display.PhotoDisplayViewModel
 import com.nlc.gesturesnap.view_model.shared.PhotoDisplayFragmentStateViewModel
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.Serializable
+
 
 class PhotoDisplayFragment : Fragment() {
 
@@ -119,6 +118,24 @@ class PhotoDisplayFragment : Fragment() {
                         PhotoDisplayComposeScreen()
                     }
                 }
+            }
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val photoDisplayViewModel =
+            ViewModelProvider(this)[PhotoDisplayViewModel::class.java]
+
+        this.view?.isFocusableInTouchMode = true
+        this.view?.requestFocus()
+        this.view?.setOnKeyListener { v, keyCode, event ->
+            if(keyCode == KeyEvent.KEYCODE_BACK){
+                photoDisplayViewModel.setIsFragmentOpen(false)
+                true
+            } else {
+                false
             }
         }
     }

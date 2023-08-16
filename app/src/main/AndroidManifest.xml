@@ -7,14 +7,19 @@
         android:required="false" />
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="32"
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".ads.MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -23,13 +28,24 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GestureSnap.Default"
         tools:targetApi="33">
-        <activity
-            android:name=".ui.screen.gallery.GalleryActivity"
-            android:exported="false"/>
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-4996200627864716~6863571723" /> <!-- Test Id -->
         <activity
             android:name=".ui.screen.capture.CaptureActivity"
-            android:theme="@style/Theme.GestureSnap.NoActionBar"
-            android:exported="true">
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.GestureSnap.NoActionBar" />
+        <activity
+            android:name=".ui.screen.gallery.GalleryActivity"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+        <activity
+            android:name=".ui.screen.splash_screen.SplashActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.App.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
