@@ -30,29 +30,32 @@ Gesture Snap is a unique and innovative Android mobile application that allows y
 ----------------
 > *Request permissions and gallery screen*
 
-https://github.com/LuongCuong244/Gesture-Snap/assets/83854080/6823426b-ee5d-43b3-9767-c5aa91e60adc
+https://github.com/LuongCuong244/GestureSnap/assets/83854080/ba300f5b-13b3-4384-9dd7-241d03c45bf6
 
 ----------------
 > *Gesture detection and photo capture*
 
-https://github.com/LuongCuong244/Gesture-Snap/assets/83854080/b1925bb6-57a7-45c0-a4ef-a32f5effa6fb
+https://github.com/LuongCuong244/GestureSnap/assets/83854080/41ee43c6-0000-42a5-9cc9-f2b61e77a1cf
 
 ### Screenshots
 ----------------
 > *Camera landscape mode*
-<img width="610" alt="Screenshot 2023-08-18 at 01 02 48" src="https://github.com/LuongCuong244/Gesture-Snap/assets/83854080/63bc8f5a-f8de-41b5-a9fb-602d9de20e93">
+<img width="610" alt="Screenshot 2023-08-18 at 01 02 48" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/685756d2-0ae1-47ff-8d9b-655c37fd4c6a">
 
 ----------------
 > *Hand gesture detection*
-<img width="344" alt="Screenshot 2023-08-18 at 00 59 13" src="https://github.com/LuongCuong244/Gesture-Snap/assets/83854080/2861db0c-2721-4286-9843-14bea60187c4">
+<img width="344" alt="Screenshot 2023-08-18 at 00 59 13" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/ba5f0cdc-a17a-439e-895e-2b7e698ec32f">
+
 
 ----------------
 > *Photos deletion*
-<img width="343" alt="Screenshot 2023-08-18 at 01 04 24" src="https://github.com/LuongCuong244/Gesture-Snap/assets/83854080/7a6ba628-bbbf-4cbd-8efd-9bec4bd71cb8">
+<img width="343" alt="Screenshot 2023-08-18 at 01 04 24" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/2a6edb8c-ea16-45e8-95cb-3fa620970240">
+
 
 ----------------
 > *Photo details*
-<img width="343" alt="Screenshot 2023-08-18 at 01 06 00" src="https://github.com/LuongCuong244/Gesture-Snap/assets/83854080/b5406fdc-fa71-4f67-ac4f-5b1e19c4bae4">
+<img width="343" alt="Screenshot 2023-08-18 at 01 06 00" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/dfadc45b-7be7-47aa-a37e-58c5ac618a87">
+
 
 ## License
 
