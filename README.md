@@ -40,22 +40,22 @@ https://github.com/LuongCuong244/GestureSnap/assets/83854080/56cd899c-4d71-480f-
 ### Screenshots
 ----------------
 > *Camera landscape mode*
-<img width="610" alt="Screenshot 2023-08-18 at 01 02 48" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/c3b50e10-4034-4938-bf47-798fb3984926">
+<img width="460" alt="Screenshot 2023-08-18 at 01 02 48" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/c3b50e10-4034-4938-bf47-798fb3984926">
 
 
 ----------------
 > *Hand gesture detection*
-<img width="344" alt="Screenshot 2023-08-18 at 00 59 13" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/2424eb57-0c71-4a31-8624-b9f82c7d54e3">
+<img width="250" alt="Screenshot 2023-08-18 at 00 59 13" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/2424eb57-0c71-4a31-8624-b9f82c7d54e3">
 
 
 ----------------
 > *Photos deletion*
-<img width="343" alt="Screenshot 2023-08-18 at 01 04 24" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/48b06298-59fc-4dd9-ab0b-a8357cbc21ef">
+<img width="250" alt="Screenshot 2023-08-18 at 01 04 24" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/48b06298-59fc-4dd9-ab0b-a8357cbc21ef">
 
 
 ----------------
 > *Photo details*
-<img width="343" alt="Screenshot 2023-08-18 at 01 06 00" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/997357df-6deb-47e5-8152-831149fdf349">
+<img width="250" alt="Screenshot 2023-08-18 at 01 06 00" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/997357df-6deb-47e5-8152-831149fdf349">
 
 
 ## License
