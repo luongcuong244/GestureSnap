@@ -56,22 +56,3 @@ https://github.com/LuongCuong244/GestureSnap/assets/83854080/56cd899c-4d71-480f-
 ----------------
 > *Photo details*
 <img width="250" alt="Screenshot 2023-08-18 at 01 06 00" src="https://github.com/LuongCuong244/GestureSnap/assets/83854080/997357df-6deb-47e5-8152-831149fdf349">
-
-
-## License
-
-    GestureSnap
-    Copyright (C) 2023-2025  Cuong
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
