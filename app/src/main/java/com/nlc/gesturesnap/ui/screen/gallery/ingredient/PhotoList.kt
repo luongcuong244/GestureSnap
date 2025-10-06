@@ -1,6 +1,5 @@
 package com.nlc.gesturesnap.ui.screen.gallery.ingredient
 
-import android.os.ConditionVariable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +20,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -38,7 +40,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.model.PhotoInfo
@@ -52,14 +55,18 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 @Composable
-fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()){
+fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()) {
 
     val gridState = rememberLazyGridState()
+    val lastPhotoCount = remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(Unit){
-        if(galleryViewModel.photos.size > 0){
-            gridState.scrollToItem(galleryViewModel.photos.lastIndex)
+    LaunchedEffect(galleryViewModel.photos.size) {
+        val newCount = galleryViewModel.photos.size
+        // Only scroll when adding photos
+        if (newCount > lastPhotoCount.intValue && newCount > 0) {
+            gridState.scrollToItem(newCount - 1)
         }
+        lastPhotoCount.intValue = newCount
     }
 
     LazyVerticalGrid(
@@ -83,67 +90,59 @@ fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()
 }
 
 @Composable
-fun PhotoItem(gridState: LazyGridState, index: Int, photo: SelectablePhoto, galleryViewModel: GalleryViewModel = viewModel()){
+fun PhotoItem(
+    gridState: LazyGridState,
+    index: Int,
+    photo: SelectablePhoto,
+    galleryViewModel: GalleryViewModel = viewModel()
+) {
 
     val density = LocalDensity.current
 
-    val imageBitmap = rememberAsyncImagePainter(model = File(photo.path))
-
     val isSelectingState = remember { mutableStateOf(photo.isSelecting) }
-
     val sizePhotoItem = remember { mutableStateOf(DpSize.Zero) }
     val positionInRootPhotoItem = remember { mutableStateOf(Offset.Zero) }
 
-    val conditionVariable = remember {
-        ConditionVariable()
-    }
-
-    val onClick : () -> Unit = {
-        if(galleryViewModel.isSelectable.value){
-            val addedValue = if(photo.isSelecting) -1 else 1
+    val onClick: () -> Unit = {
+        if (galleryViewModel.isSelectable.value) {
+            val addedValue = if (photo.isSelecting) -1 else 1
             galleryViewModel.setSelectedItemsCount(galleryViewModel.selectedItemsCount.value + addedValue)
 
             photo.isSelecting = !photo.isSelecting
             isSelectingState.value = photo.isSelecting // refresh UI
         } else {
-
-            val isFullyVisibleItem = isFullyVisibleItem(gridState, index)
-
-            if(!isFullyVisibleItem){
-                CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(Dispatchers.Main).launch {
+                val isFullyVisibleItem = isFullyVisibleItem(gridState, index)
+                if (!isFullyVisibleItem) {
                     gridState.scrollToItem(index)
                 }
-                conditionVariable.close()
-                conditionVariable.block(1000L)
-            }
-
-            galleryViewModel.setFragmentArgument(
-                PhotoDisplayFragment.Argument(
-                    sizePhotoItem.value,
-                    positionInRootPhotoItem.value,
-                    photo as PhotoInfo
+                galleryViewModel.setFragmentArgument(
+                    PhotoDisplayFragment.Argument(
+                        sizePhotoItem.value,
+                        positionInRootPhotoItem.value,
+                        photo as PhotoInfo
+                    )
                 )
-            )
-
-            galleryViewModel.setIsPhotoDisplayFragmentViewVisible(true)
+                galleryViewModel.setIsPhotoDisplayFragmentViewVisible(true)
+            }
         }
     }
 
-    LaunchedEffect(galleryViewModel.isSelectable.value){
-        if(!galleryViewModel.isSelectable.value){
+    LaunchedEffect(galleryViewModel.isSelectable.value) {
+        if (!galleryViewModel.isSelectable.value) {
             isSelectingState.value = photo.isSelecting // refresh UI
         }
     }
 
     val alpha = remember {
-        mutableStateOf(1f)
+        mutableFloatStateOf(1f)
     }
 
-    LaunchedEffect(galleryViewModel.fragmentArgument.value){
+    LaunchedEffect(galleryViewModel.fragmentArgument.value) {
 
         val path = galleryViewModel.fragmentArgument.value.photo.path
 
-        if(path == photo.path){
+        if (path == photo.path) {
             delay(100) // for fragment initialization
             alpha.value = 0f
         } else {
@@ -178,18 +177,20 @@ fun PhotoItem(gridState: LazyGridState, index: Int, photo: SelectablePhoto, gall
 
                     sizePhotoItem.value = DpSize(viewWidthDp, viewHeightDp)
                     positionInRootPhotoItem.value = it.positionInRoot()
-
-                    conditionVariable.open()
                 }
         ) {
-            Box(modifier = Modifier.fillMaxSize()){
-                Image(
-                    painter = imageBitmap,
+            Box(modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(File(photo.path))
+                        .memoryCacheKey(photo.path)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = "Photo",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillBounds
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier.fillMaxSize()
                 )
-                if(isSelectingState.value){
+                if (isSelectingState.value) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -211,18 +212,18 @@ fun PhotoItem(gridState: LazyGridState, index: Int, photo: SelectablePhoto, gall
     }
 }
 
-fun isFullyVisibleItem(listState: LazyGridState, index: Int) : Boolean{
+fun isFullyVisibleItem(listState: LazyGridState, index: Int): Boolean {
     val layoutInfo = listState.layoutInfo
     val visibleItemsInfo = layoutInfo.visibleItemsInfo
 
-    if(visibleItemsInfo.isEmpty()) return false
+    if (visibleItemsInfo.isEmpty()) return false
 
     val item = visibleItemsInfo.find {
         it.index == index
     } ?: return false
 
     // item is on top of the Lazy Vertical Grid
-    if(item.offset.y < 0){
+    if (item.offset.y < 0) {
         return false
     }
 

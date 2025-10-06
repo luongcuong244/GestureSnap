@@ -33,6 +33,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
@@ -75,21 +76,23 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val allPhotos = MediaHelper.getAllPhotos(this).map {
-            SelectablePhoto(
-                path = it.path,
-                uri = it.uri,
-                name = it.name,
-                size = it.size,
-                dateTaken = it.dateTaken,
-                resolution = it.resolution
-            )
-        }
-
         val galleryViewModel =
             ViewModelProvider(this@GalleryActivity)[GalleryViewModel::class.java]
 
-        galleryViewModel.setPhotos(allPhotos)
+        lifecycleScope.launch(Dispatchers.IO) {
+            val allPhotos = MediaHelper.getAllPhotos(this@GalleryActivity).map {
+                SelectablePhoto(
+                    path = it.path,
+                    uri = it.uri,
+                    name = it.name,
+                    size = it.size,
+                    dateTaken = it.dateTaken,
+                    resolution = it.resolution
+                )
+            }
+
+            galleryViewModel.setPhotos(allPhotos)
+        }
 
         val photoDisplayFragmentStateViewModel =
             ViewModelProvider(this@GalleryActivity)[PhotoDisplayFragmentStateViewModel::class.java]

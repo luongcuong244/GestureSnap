@@ -4,19 +4,20 @@ import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
 import android.util.Size
+import androidx.core.database.getIntOrNull
 import com.nlc.gesturesnap.model.PhotoInfo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Date
 
 object MediaHelper {
 
-    fun createPhotoUri(context: Context, directory: String, fileName: String) : Uri? {
+    fun createPhotoUri(context: Context, directory: String, fileName: String): Uri? {
 
         val images: Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
@@ -29,7 +30,7 @@ object MediaHelper {
         contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
         contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
 
-        if(directory.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+        if (directory.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, directory)
         }
 
@@ -45,7 +46,7 @@ object MediaHelper {
             outputStream?.flush()
             outputStream?.close()
             true
-        } catch (e: java.lang.Exception){
+        } catch (e: java.lang.Exception) {
             false
         }
     }
@@ -74,48 +75,42 @@ object MediaHelper {
         return filePath
     }
 
-    fun getAllPhotos(context: Context) : List<PhotoInfo>{
-
+    suspend fun getAllPhotos(context: Context): List<PhotoInfo> = withContext(Dispatchers.IO) {
         if (!PermissionHelper.isReadExternalStoragePermissionGranted(context)) {
-            return emptyList()
+            return@withContext emptyList()
         }
 
-        val uri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val projection = arrayOf(
             MediaStore.Images.Media._ID,
             MediaStore.Images.Media.DATA,
-            MediaStore.Images.Media.DATE_TAKEN
+            MediaStore.Images.Media.DATE_TAKEN,
+            MediaStore.Images.Media.WIDTH,
+            MediaStore.Images.Media.HEIGHT
         )
+        val sortOrder = "${MediaStore.Images.Media.DATE_TAKEN} DESC"
 
-        val cursor =
-            context.contentResolver.query(uri, projection, null, null, null)
-                ?: return emptyList()
+        val cursor = context.contentResolver.query(uri, projection, null, null, sortOrder)
+            ?: return@withContext emptyList()
 
         val photos = mutableListOf<PhotoInfo>()
 
+        val idIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+        val pathIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        val dateTakenIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN)
+        val widthIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.WIDTH)
+        val heightIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT)
+
+        var count = 0
         while (cursor.moveToNext()) {
-
-            val imageId = cursor.getLong(0)
-            val photoUri = ContentUris.withAppendedId(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                imageId
-            )
-
-            val photoPath = cursor.getString(1)
-
+            val photoPath = cursor.getString(pathIndex)
             val file = File(photoPath)
+            if (!file.exists()) continue
 
-            val options = BitmapFactory.Options()
-            options.inJustDecodeBounds = true
-            BitmapFactory.decodeFile(photoPath, options)
-
-            var photoResolution = Size(0, 0)
-
-            if(options.outHeight > 0 && options.outWidth > 0){
-                photoResolution = Size(options.outWidth, options.outHeight)
-            }
-
-            val dateTaken = cursor.getLong(2)
+            val photoUri = ContentUris.withAppendedId(uri, cursor.getLong(idIndex))
+            val dateTaken = cursor.getLong(dateTakenIndex)
+            val width = cursor.getIntOrNull(widthIndex) ?: 0
+            val height = cursor.getIntOrNull(heightIndex) ?: 0
 
             photos.add(
                 PhotoInfo(
@@ -123,15 +118,16 @@ object MediaHelper {
                     uri = photoUri,
                     name = file.name,
                     size = file.length(),
-                    dateTaken = Date(if(dateTaken > 0) dateTaken else file.lastModified()),
-                    resolution = photoResolution
+                    dateTaken = Date(if (dateTaken > 0) dateTaken else file.lastModified()),
+                    resolution = Size(width, height)
                 )
             )
 
-            Log.d("DAGDAGGD","DATA: ${if(dateTaken > 0) dateTaken else file.lastModified()}" )
+            count++
+            if (count >= 2000) break // 2000 photos limited
         }
-        cursor.close()
 
-        return photos
+        cursor.close()
+        photos
     }
 }
