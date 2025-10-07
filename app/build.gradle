@@ -45,9 +45,6 @@ android {
 }
 
 dependencies {
-
-    implementation 'androidx.core:core-splashscreen:1.0.1'
-
     implementation 'com.google.android.gms:play-services-ads:24.6.0'
 
     implementation 'androidx.multidex:multidex:2.0.1'
@@ -114,5 +111,5 @@ dependencies {
     implementation "androidx.camera:camera-view:$camerax_version"
 
     // Mediapipe Library
-    implementation 'com.google.mediapipe:tasks-vision:0.20230731'
+    implementation 'com.google.mediapipe:tasks-vision:0.10.29'
 }
