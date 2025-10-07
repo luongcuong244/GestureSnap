@@ -14,33 +14,20 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.zIndex
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.nlc.gesturesnap.R
 import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.helper.MediaHelper
@@ -61,7 +48,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 
-class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
+class GalleryActivity : AppCompatActivity(), PhotoDeleteListener {
 
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
 
@@ -70,8 +57,6 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
     private val condVarWaitState = ConditionVariable()
 
     private val actions = Actions()
-
-    private var mInterstitialAd: InterstitialAd? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,11 +83,11 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
             ViewModelProvider(this@GalleryActivity)[PhotoDisplayFragmentStateViewModel::class.java]
 
         photoDisplayFragmentStateViewModel.photoDisplayFragmentState.observe(this) {
-            if(it == PhotoDisplayFragmentStateViewModel.State.PREPARE_CLOSE){
+            if (it == PhotoDisplayFragmentStateViewModel.State.PREPARE_CLOSE) {
                 galleryViewModel.setFragmentArgument(PhotoDisplayFragment.Argument())
             }
 
-            if(it == PhotoDisplayFragmentStateViewModel.State.CLOSED){
+            if (it == PhotoDisplayFragmentStateViewModel.State.CLOSED) {
                 galleryViewModel.setIsPhotoDisplayFragmentViewVisible(false)
             }
         }
@@ -113,11 +98,12 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
             }
         }
 
-        intentSenderLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
-            if(it.resultCode == RESULT_OK) {
-                updateAfterDeletingPhotosSuccessfully()
+        intentSenderLauncher =
+            registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
+                if (it.resultCode == RESULT_OK) {
+                    updateAfterDeletingPhotosSuccessfully()
+                }
             }
-        }
 
         requestExternalPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
@@ -133,36 +119,17 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
         actions.popActivity()
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        val adRequest = AdRequest.Builder().build()
-
-        InterstitialAd.load(this@GalleryActivity,"ca-app-pub-3940256099942544/1033173712", adRequest, object : InterstitialAdLoadCallback() {
-            override fun onAdFailedToLoad(adError: LoadAdError) {
-                mInterstitialAd = null
-            }
-            override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                mInterstitialAd = interstitialAd
-            }
-        })
-    }
-
     inner class Actions {
 
-        fun popActivity(){
-
-            if (mInterstitialAd != null) {
-                mInterstitialAd?.show(this@GalleryActivity)
-            }
-
+        fun popActivity() {
             finish()
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
         }
 
         @RequiresApi(Build.VERSION_CODES.R)
-        fun deletePhotosWithApi30orLater(photoUris: List<Uri>){
-            val intentSender = MediaStore.createDeleteRequest(contentResolver, photoUris).intentSender
+        fun deletePhotosWithApi30orLater(photoUris: List<Uri>) {
+            val intentSender =
+                MediaStore.createDeleteRequest(contentResolver, photoUris).intentSender
             intentSender.let { sender ->
                 intentSenderLauncher.launch(
                     IntentSenderRequest.Builder(sender).build()
@@ -170,8 +137,8 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
             }
         }
 
-        fun deletePhotoWithApi29(photoUri: Uri){
-            if(Build.VERSION.SDK_INT != Build.VERSION_CODES.Q){
+        fun deletePhotoWithApi29(photoUri: Uri) {
+            if (Build.VERSION.SDK_INT != Build.VERSION_CODES.Q) {
                 return
             }
 
@@ -180,7 +147,8 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
                 updateAfterDeletingPhotosSuccessfully()
             } catch (e: SecurityException) {
                 val recoverableSecurityException = e as? RecoverableSecurityException
-                val intentSender = recoverableSecurityException?.userAction?.actionIntent?.intentSender
+                val intentSender =
+                    recoverableSecurityException?.userAction?.actionIntent?.intentSender
 
                 intentSender?.let { sender ->
                     intentSenderLauncher.launch(
@@ -190,22 +158,23 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
             }
         }
 
-        fun deletePhotosWithApi28orOlder(photoUris: List<Uri>){
+        fun deletePhotosWithApi28orOlder(photoUris: List<Uri>) {
 
             CoroutineScope(Dispatchers.IO).launch {
 
                 var hasWriteExternalPermission = true
 
-                if(!PermissionHelper.isWriteExternalStoragePermissionGranted(this@GalleryActivity)){
+                if (!PermissionHelper.isWriteExternalStoragePermissionGranted(this@GalleryActivity)) {
                     requestExternalPermissionLauncher.launch(
                         Manifest.permission.WRITE_EXTERNAL_STORAGE
                     )
 
                     condVarWaitState.close()
-                    hasWriteExternalPermission = condVarWaitState.block(1000) // stop and wait until the permission is granted
+                    hasWriteExternalPermission =
+                        condVarWaitState.block(1000) // stop and wait until the permission is granted
                 }
 
-                if(hasWriteExternalPermission) {
+                if (hasWriteExternalPermission) {
                     photoUris.forEach {
                         contentResolver.delete(it, null, null)
                     }
@@ -215,7 +184,7 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
         }
     }
 
-    private fun updateAfterDeletingPhotosSuccessfully(){
+    private fun updateAfterDeletingPhotosSuccessfully() {
 
         closePhotoDisplayFragment()
 
@@ -230,7 +199,7 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
         galleryViewModel.setIsSelectable(false)
     }
 
-    private fun closePhotoDisplayFragment(){
+    private fun closePhotoDisplayFragment() {
         val galleryViewModel =
             ViewModelProvider(this@GalleryActivity)[GalleryViewModel::class.java]
 
@@ -238,7 +207,7 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
         val fragments = fragmentManager.fragments
 
         fragments.forEach {
-            if(it is PhotoDisplayFragment){
+            if (it is PhotoDisplayFragment) {
                 it.closeFragment()
                 galleryViewModel.setFragmentArgument(PhotoDisplayFragment.Argument())
             }
@@ -260,10 +229,14 @@ class GalleryActivity : AppCompatActivity(), PhotoDeleteListener{
 }
 
 @Composable
-fun GalleryActivityComposeScreen(activityActions: GalleryActivity.Actions, fragmentManager: FragmentManager, galleryViewModel: GalleryViewModel = viewModel()){
+fun GalleryActivityComposeScreen(
+    activityActions: GalleryActivity.Actions,
+    fragmentManager: FragmentManager,
+    galleryViewModel: GalleryViewModel = viewModel()
+) {
 
     val bottomBarTranslationValue by animateDpAsState(
-        targetValue = if(galleryViewModel.isSelectable.value) 0.dp else AppConstant.BOTTOM_BAR_HEIGHT,
+        targetValue = if (galleryViewModel.isSelectable.value) 0.dp else AppConstant.BOTTOM_BAR_HEIGHT,
         label = ""
     )
 
@@ -287,29 +260,15 @@ fun GalleryActivityComposeScreen(activityActions: GalleryActivity.Actions, fragm
                     PhotosList(bottomBarTranslationValue)
                     BottomBar(activityActions, bottomBarTranslationValue)
                 }
-                AndroidView(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .background(colorResource(R.color.gray_white))
-                        .zIndex(1f),
-                    factory = {
-                        AdView(it).apply {
-                            setAdSize(AdSize.BANNER)
-                            adUnitId = "ca-app-pub-3940256099942544/6300978111"
-                            loadAd(AdRequest.Builder().build())
-                        }
-                    }
-                )
             }
-            
-            if(galleryViewModel.isPhotoDeletionDialogVisible.value){
+
+            if (galleryViewModel.isPhotoDeletionDialogVisible.value) {
                 PhotoDeletionDialog(
                     onCancel = {
                         galleryViewModel.setIsPhotoDeletionDialogVisible(false)
                     },
                     onDelete = {
-                        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q){
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                             activityActions.deletePhotosWithApi28orOlder(
                                 galleryViewModel.photos.filter {
                                     it.isSelecting
@@ -321,7 +280,7 @@ fun GalleryActivityComposeScreen(activityActions: GalleryActivity.Actions, fragm
                     }
                 )
             }
-            
+
             PhotoDisplayFragmentView(fragmentManager)
         }
     }

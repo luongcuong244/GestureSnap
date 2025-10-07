@@ -22,7 +22,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nlc.gesturesnap.R
-import com.nlc.gesturesnap.ads.MyApplication
 import com.nlc.gesturesnap.databinding.ActivityCaptureBinding
 import com.nlc.gesturesnap.helper.AppConstant
 import com.nlc.gesturesnap.helper.LocalStorageHelper
@@ -64,7 +63,7 @@ class CaptureActivity : AppCompatActivity() {
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
-                if(!PermissionHelper.isWriteExternalStoragePermissionGranted(this)){
+                if (!PermissionHelper.isWriteExternalStoragePermissionGranted(this)) {
                     requestWriteExternalPermissionLauncher.launch(
                         Manifest.permission.WRITE_EXTERNAL_STORAGE
                     )
@@ -80,37 +79,27 @@ class CaptureActivity : AppCompatActivity() {
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
-            if(isGranted){
+            if (isGranted) {
                 binding.permissionViewModel?.setStoragePermissionGranted(true)
             }
         }
 
     private var _binding: ActivityCaptureBinding? = null
-    
+
     private val binding get() = _binding!!
 
-    private var gestureDetectAdapter : GestureDetectAdapter? = null
+    private var gestureDetectAdapter: GestureDetectAdapter? = null
 
     private lateinit var animationHandler: AnimationHandler
-    private lateinit var positionCalculator : PositionCalculator
+    private lateinit var positionCalculator: PositionCalculator
 
-    private var cameraFragment : CameraFragment? = null
+    private var cameraFragment: CameraFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val application = application as? MyApplication
-
-        application?.showAdIfAvailable(
-            this@CaptureActivity,
-            object : MyApplication.OnShowAdCompleteListener {
-                override fun onShowAdComplete() {
-
-                }
-            })
-
         _binding = DataBindingUtil.setContentView(
-            this, R.layout.activity_capture)
+            this, R.layout.activity_capture
+        )
 
         animationHandler = AnimationHandler(this, binding)
         positionCalculator = PositionCalculator(this, binding)
@@ -123,7 +112,7 @@ class CaptureActivity : AppCompatActivity() {
         setupCameraModeViewModel()
         setupRecentPhotoViewModel()
 
-        if(binding.cameraModeViewModel?.availableCameraOrientations?.isNotEmpty() == true){
+        if (binding.cameraModeViewModel?.availableCameraOrientations?.isNotEmpty() == true) {
             cameraFragment = CameraFragment()
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, cameraFragment!!)
@@ -141,7 +130,7 @@ class CaptureActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupPermissionViewModel(){
+    private fun setupPermissionViewModel() {
         val permissionViewModel =
             ViewModelProvider(this)[PermissionViewModel::class.java]
 
@@ -152,19 +141,28 @@ class CaptureActivity : AppCompatActivity() {
             recentPhotoViewModel.updateRecentPhoto(this)
         }
 
-        permissionViewModel.setCameraPermissionGranted(PermissionHelper.isCameraPermissionGranted(this))
-        permissionViewModel.setStoragePermissionGranted(PermissionHelper.isReadExternalStoragePermissionGranted(this))
+        permissionViewModel.setCameraPermissionGranted(
+            PermissionHelper.isCameraPermissionGranted(
+                this
+            )
+        )
+        permissionViewModel.setStoragePermissionGranted(
+            PermissionHelper.isReadExternalStoragePermissionGranted(
+                this
+            )
+        )
 
         binding.permissionViewModel = permissionViewModel
     }
 
-    private fun setupTimerViewModel(){
+    private fun setupTimerViewModel() {
         val timerViewModel =
             ViewModelProvider(this)[TimerViewModel::class.java]
 
         binding.timerViewModel = timerViewModel
 
-        val storedIndex = (LocalStorageHelper.readData(this, AppConstant.TIMER_MODE_INDEX_KEY) as Int?) ?: 0
+        val storedIndex =
+            (LocalStorageHelper.readData(this, AppConstant.TIMER_MODE_INDEX_KEY) as Int?) ?: 0
         timerViewModel.setAndSaveTimerOption(
             TimerOption.values()[storedIndex]
         )
@@ -180,17 +178,29 @@ class CaptureActivity : AppCompatActivity() {
 
         binding.gestureDetectViewModel = gestureDetectViewModel
 
-        val storedIsDrawHandTrackingLineValue = (LocalStorageHelper.readData(this, AppConstant.HAND_TRACKING_MODE_VALUE_KEY) as Boolean?) ?: false
-        gestureDetectViewModel.setAndSaveIsDrawHandTrackingLineValue(storedIsDrawHandTrackingLineValue)
+        val storedIsDrawHandTrackingLineValue = (LocalStorageHelper.readData(
+            this,
+            AppConstant.HAND_TRACKING_MODE_VALUE_KEY
+        ) as Boolean?) ?: false
+        gestureDetectViewModel.setAndSaveIsDrawHandTrackingLineValue(
+            storedIsDrawHandTrackingLineValue
+        )
 
         gestureDetectViewModel.handGestureOptions.observe(this) {
 
             val layoutManager =
                 LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
-            val initPosition = (LocalStorageHelper.readData(this, AppConstant.GESTURE_OPTION_INDEX_KEY) as Int?) ?: 0
+            val initPosition =
+                (LocalStorageHelper.readData(this, AppConstant.GESTURE_OPTION_INDEX_KEY) as Int?)
+                    ?: 0
 
-            gestureDetectAdapter = GestureDetectAdapter(binding.recyclerGestureDetect ,this, it, initPosition) { index ->
+            gestureDetectAdapter = GestureDetectAdapter(
+                binding.recyclerGestureDetect,
+                this,
+                it,
+                initPosition
+            ) { index ->
                 gestureDetectViewModel.setCurrentHandGesture(index)
             }
 
@@ -216,7 +226,7 @@ class CaptureActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupCameraModeViewModel(){
+    private fun setupCameraModeViewModel() {
         val cameraModeViewModel =
             ViewModelProvider(this)[CameraModeViewModel::class.java]
 
@@ -224,22 +234,30 @@ class CaptureActivity : AppCompatActivity() {
 
         binding.cameraModeViewModel = cameraModeViewModel
 
-        val storedGridModeValue = (LocalStorageHelper.readData(this, AppConstant.GRID_MODE_VALUE_KEY) as Boolean?) ?: false
+        val storedGridModeValue =
+            (LocalStorageHelper.readData(this, AppConstant.GRID_MODE_VALUE_KEY) as Boolean?)
+                ?: false
         cameraModeViewModel.setAndSaveGridMode(storedGridModeValue)
 
-        if(cameraModeViewModel.availableCameraOrientations.isNotEmpty()){
+        if (cameraModeViewModel.availableCameraOrientations.isNotEmpty()) {
             val storedCameraOrientationValue =
-                (LocalStorageHelper.readData(this, AppConstant.CAMERA_ORIENTATION_VALUE_KEY) as Int?)
+                (LocalStorageHelper.readData(
+                    this,
+                    AppConstant.CAMERA_ORIENTATION_VALUE_KEY
+                ) as Int?)
                     ?: cameraModeViewModel.availableCameraOrientations[0]
             cameraModeViewModel.setAndSaveCameraOrientation(storedCameraOrientationValue)
         }
 
-        val storedFlashModeIndex = (LocalStorageHelper.readData(this, AppConstant.FLASH_MODE_INDEX_KEY) as Int?) ?: 0
+        val storedFlashModeIndex =
+            (LocalStorageHelper.readData(this, AppConstant.FLASH_MODE_INDEX_KEY) as Int?) ?: 0
         cameraModeViewModel.setAndSaveFlashMode(
             FlashOption.values()[storedFlashModeIndex]
         )
 
-        val storedCameraAspectRatioValue = (LocalStorageHelper.readData(this, AppConstant.ASPECT_RATIO_MODE_VALUE_KEY) as Int?) ?: 0
+        val storedCameraAspectRatioValue =
+            (LocalStorageHelper.readData(this, AppConstant.ASPECT_RATIO_MODE_VALUE_KEY) as Int?)
+                ?: 0
         cameraModeViewModel.setAndSaveAspectRatio(storedCameraAspectRatioValue)
 
         cameraModeViewModel.flashOption.observe(this) {
@@ -251,35 +269,39 @@ class CaptureActivity : AppCompatActivity() {
         cameraModeViewModel.cameraAspectRatio.observe(this) {
 
             try {
-                var layoutParams : FrameLayout.LayoutParams? = null
+                var layoutParams: FrameLayout.LayoutParams? = null
 
-                when(it){
+                when (it) {
                     AspectRatio.RATIO_4_3 -> {
                         layoutParams = FrameLayout.LayoutParams(deviceWidth, deviceWidth * 4 / 3)
                     }
+
                     AspectRatio.RATIO_16_9 -> {
                         layoutParams = FrameLayout.LayoutParams(deviceWidth, deviceWidth * 16 / 9)
                     }
                 }
 
-                if(layoutParams != null){
+                if (layoutParams != null) {
                     binding.fragmentContainer.layoutParams = layoutParams
 
-                    binding.fragmentContainer.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                    binding.fragmentContainer.viewTreeObserver.addOnGlobalLayoutListener(object :
+                        ViewTreeObserver.OnGlobalLayoutListener {
                         override fun onGlobalLayout() {
-                            binding.fragmentContainer.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                            binding.fragmentContainer.viewTreeObserver.removeOnGlobalLayoutListener(
+                                this
+                            )
 
                             positionCalculator.calculateViewsPosition()
                         }
                     })
                 }
-            } catch (e : java.lang.Exception){
+            } catch (e: java.lang.Exception) {
                 Log.d(TAG, e.toString())
             }
         }
     }
 
-    private fun getAvailableCameraOrientations() : List<Int>{
+    private fun getAvailableCameraOrientations(): List<Int> {
 
         val availableCameraOrientations = mutableListOf<Int>()
 
@@ -288,20 +310,23 @@ class CaptureActivity : AppCompatActivity() {
         val cameraIds = cameraManager.cameraIdList.filter {
             val characteristics = cameraManager.getCameraCharacteristics(it)
             val capabilities = characteristics.get(
-                CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
+                CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES
+            )
             capabilities?.contains(
-                CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE) ?: false
+                CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE
+            ) ?: false
         }
 
         cameraIds.forEach { cameraId ->
             val cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId)
-            val isCameraAvailable = cameraCharacteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) != CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY
+            val isCameraAvailable =
+                cameraCharacteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) != CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY
 
             if (isCameraAvailable) {
                 val orientationId = lensOrientationInt(
                     cameraCharacteristics.get(CameraCharacteristics.LENS_FACING)!!
                 )
-                if(orientationId != -1){
+                if (orientationId != -1) {
                     availableCameraOrientations.add(orientationId)
                 }
             }
@@ -310,13 +335,13 @@ class CaptureActivity : AppCompatActivity() {
         return availableCameraOrientations
     }
 
-    private fun lensOrientationInt(value: Int) = when(value) {
+    private fun lensOrientationInt(value: Int) = when (value) {
         CameraCharacteristics.LENS_FACING_BACK -> CameraSelector.LENS_FACING_BACK
         CameraCharacteristics.LENS_FACING_FRONT -> CameraSelector.LENS_FACING_FRONT
         else -> -1
     }
 
-    private fun setupRecentPhotoViewModel(){
+    private fun setupRecentPhotoViewModel() {
         val recentPhotoViewModel =
             ViewModelProvider(this)[RecentPhotoViewModel::class.java]
 
@@ -325,7 +350,7 @@ class CaptureActivity : AppCompatActivity() {
         }
     }
 
-    fun closePermissionDialogAndRequestCameraPermission(){
+    fun closePermissionDialogAndRequestCameraPermission() {
         binding.permissionViewModel?.setCameraPermissionDialogShowing(false)
 
         requestCameraPermissionLauncher.launch(
@@ -333,7 +358,7 @@ class CaptureActivity : AppCompatActivity() {
         )
     }
 
-    fun closePermissionDialogAndRequestStoragePermission(){
+    fun closePermissionDialogAndRequestStoragePermission() {
         binding.permissionViewModel?.setStoragePermissionDialogShowing(false)
 
         val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
@@ -344,7 +369,7 @@ class CaptureActivity : AppCompatActivity() {
         )
     }
 
-    fun closeDialogAndOpenAppInfo(){
+    fun closeDialogAndOpenAppInfo() {
         binding.permissionViewModel?.setCameraPermissionTipDialogShowing(false)
         binding.permissionViewModel?.setStoragePermissionTipDialogShowing(false)
 
@@ -353,24 +378,24 @@ class CaptureActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    fun switchToGalleryActivity(){
-        if(!PermissionHelper.isReadExternalStoragePermissionGranted(this)){
+    fun switchToGalleryActivity() {
+        if (!PermissionHelper.isReadExternalStoragePermissionGranted(this)) {
             binding.permissionViewModel?.setStoragePermissionDialogShowing(true)
             return
         }
 
-        val intent = Intent(this, GalleryActivity :: class.java)
+        val intent = Intent(this, GalleryActivity::class.java)
         startActivity(intent)
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
     }
 
-    fun showMenuBar(cameraOption: CameraOption){
+    fun showMenuBar(cameraOption: CameraOption) {
         animationHandler.showMenuBar(cameraOption)
     }
 
-    fun onClickCaptureButton(){
+    fun onClickCaptureButton() {
 
-        if(!PermissionHelper.isReadExternalStoragePermissionGranted(this)){
+        if (!PermissionHelper.isReadExternalStoragePermissionGranted(this)) {
             binding.permissionViewModel?.setStoragePermissionDialogShowing(true)
             return
         }
@@ -378,7 +403,7 @@ class CaptureActivity : AppCompatActivity() {
         binding.gestureDetectViewModel?.setIsDetecting(false)
         binding.gestureDetectViewModel?.cancelTimer()
 
-        if(binding.timerViewModel?.timerOption?.value == TimerOption.OFF){
+        if (binding.timerViewModel?.timerOption?.value == TimerOption.OFF) {
             cameraFragment?.takePhoto()
         } else {
 
@@ -394,8 +419,16 @@ class CaptureActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        binding.permissionViewModel?.setCameraPermissionGranted(PermissionHelper.isCameraPermissionGranted(this))
-        binding.permissionViewModel?.setStoragePermissionGranted(PermissionHelper.isReadExternalStoragePermissionGranted(this))
+        binding.permissionViewModel?.setCameraPermissionGranted(
+            PermissionHelper.isCameraPermissionGranted(
+                this
+            )
+        )
+        binding.permissionViewModel?.setStoragePermissionGranted(
+            PermissionHelper.isReadExternalStoragePermissionGranted(
+                this
+            )
+        )
 
         // update recent photo
         val recentPhotoViewModel =

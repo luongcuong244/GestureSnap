@@ -1,10 +1,8 @@
 package com.nlc.gesturesnap.ui.screen.photo_display
 
-import android.R.attr.fragment
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -65,9 +63,9 @@ class PhotoDisplayFragment : Fragment() {
         }
     }
 
-    class Argument (
-        val initialPhotoSize : DpSize = DpSize.Zero,
-        val initialPhotoPosition : Offset = Offset.Zero,
+    class Argument(
+        val initialPhotoSize: DpSize = DpSize.Zero,
+        val initialPhotoPosition: Offset = Offset.Zero,
         val photo: PhotoInfo = PhotoInfo()
     ) : Serializable
 
@@ -78,7 +76,7 @@ class PhotoDisplayFragment : Fragment() {
     ): View {
 
         val argument = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arguments?.getSerializable(ARGUMENT_KEY, Argument :: class.java)
+            arguments?.getSerializable(ARGUMENT_KEY, Argument::class.java)
         } else {
             arguments?.getSerializable(ARGUMENT_KEY) as Argument
         } ?: Argument()
@@ -91,7 +89,7 @@ class PhotoDisplayFragment : Fragment() {
         photoDisplayViewModel.setIsFragmentOpen(true)
 
         photoDisplayViewModel.isFragmentOpen.observe(requireActivity()) {
-            if(!it){
+            if (!it) {
                 CoroutineScope(Dispatchers.IO).launch {
 
                     delay(AppConstant.ANIMATION_DURATION_MILLIS.toLong()) // wait the animation done
@@ -131,7 +129,7 @@ class PhotoDisplayFragment : Fragment() {
         this.view?.isFocusableInTouchMode = true
         this.view?.requestFocus()
         this.view?.setOnKeyListener { v, keyCode, event ->
-            if(keyCode == KeyEvent.KEYCODE_BACK){
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
                 photoDisplayViewModel.setIsFragmentOpen(false)
                 true
             } else {
@@ -140,8 +138,9 @@ class PhotoDisplayFragment : Fragment() {
         }
     }
 
-    fun closeFragment(){
-        val fragmentTransaction: FragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
+    fun closeFragment() {
+        val fragmentTransaction: FragmentTransaction =
+            requireActivity().supportFragmentManager.beginTransaction()
         fragmentTransaction.remove(this)
         fragmentTransaction.commit()
     }
@@ -159,7 +158,7 @@ class PhotoDisplayFragment : Fragment() {
 }
 
 @Composable
-fun PhotoDisplayComposeScreen(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
+fun PhotoDisplayComposeScreen(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -172,11 +171,11 @@ fun PhotoDisplayComposeScreen(photoDisplayViewModel: PhotoDisplayViewModel = vie
             InteractiveView()
             ViewContainer()
 
-            if(photoDisplayViewModel.isPhotoDetailDialogVisible.value){
+            if (photoDisplayViewModel.isPhotoDetailDialogVisible.value) {
                 PhotoDetailDialog()
             }
 
-            if(photoDisplayViewModel.isPhotoDeletionDialogVisible.value){
+            if (photoDisplayViewModel.isPhotoDeletionDialogVisible.value) {
                 PhotoDeletionDialog(
                     onCancel = {
                         photoDisplayViewModel.setIsPhotoDeletionDialogVisible(false)
@@ -185,11 +184,12 @@ fun PhotoDisplayComposeScreen(photoDisplayViewModel: PhotoDisplayViewModel = vie
 
                         val uri = photoDisplayViewModel.fragmentArgument.value.photo.uri
 
-                        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.Q){
+                        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
                             photoDisplayViewModel.photoDeleteListener?.deletePhotoWithApi29(uri)
-                        }
-                        else if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q){
-                            photoDisplayViewModel.photoDeleteListener?.deletePhotosWithApi28orOlder(uri)
+                        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                            photoDisplayViewModel.photoDeleteListener?.deletePhotosWithApi28orOlder(
+                                uri
+                            )
                         }
                     }
                 )
@@ -199,23 +199,23 @@ fun PhotoDisplayComposeScreen(photoDisplayViewModel: PhotoDisplayViewModel = vie
 }
 
 @Composable
-fun ViewContainer(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
+fun ViewContainer(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()) {
 
     val isFragmentOpen = remember { mutableStateOf(false) }
 
     val alpha by animateFloatAsState(
-        targetValue = if(isFragmentOpen.value) 1f else 0f,
+        targetValue = if (isFragmentOpen.value) 1f else 0f,
         animationSpec = tween(durationMillis = AppConstant.ANIMATION_DURATION_MILLIS),
         label = "",
     )
 
-    LaunchedEffect(photoDisplayViewModel.isFragmentOpen.observeAsState(false).value){
+    LaunchedEffect(photoDisplayViewModel.isFragmentOpen.observeAsState(false).value) {
         photoDisplayViewModel.isFragmentOpen.value?.let {
             isFragmentOpen.value = it
         }
     }
 
-    if(!photoDisplayViewModel.isOnlyDisplayPhoto.value){
+    if (!photoDisplayViewModel.isOnlyDisplayPhoto.value) {
         Box(
             Modifier
                 .fillMaxSize()

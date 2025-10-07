@@ -26,13 +26,10 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.GestureSnap.Default"
-        tools:targetApi="33">
-
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-4996200627864716~6863571723" /> <!-- Test Id -->
+        android:usesCleartextTraffic="true">
 
         <activity
             android:name=".ui.screen.capture.CaptureActivity"
@@ -41,8 +38,8 @@
             android:theme="@style/Theme.GestureSnap.NoActionBar" />
         <activity
             android:name=".ui.screen.gallery.GalleryActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.screen.splash_screen.SplashActivity"
             android:exported="true"
@@ -54,6 +51,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-4996200627864716~6863571723" /> <!-- Test Id -->
     </application>
 
 </manifest>
