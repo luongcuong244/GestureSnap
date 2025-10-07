@@ -14,7 +14,6 @@ import android.util.Log
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.core.content.ContextCompat
@@ -30,6 +29,7 @@ import com.nlc.gesturesnap.helper.PermissionHelper
 import com.nlc.gesturesnap.model.enums.CameraOption
 import com.nlc.gesturesnap.model.enums.FlashOption
 import com.nlc.gesturesnap.model.enums.TimerOption
+import com.nlc.gesturesnap.ui.core.BaseActivity
 import com.nlc.gesturesnap.ui.screen.capture.animation.AnimationHandler
 import com.nlc.gesturesnap.ui.screen.capture.component.GestureDetectAdapter
 import com.nlc.gesturesnap.ui.screen.capture.responsive.PositionCalculator
@@ -41,7 +41,7 @@ import com.nlc.gesturesnap.view_model.capture.PermissionViewModel
 import com.nlc.gesturesnap.view_model.capture.RecentPhotoViewModel
 import com.nlc.gesturesnap.view_model.capture.TimerViewModel
 
-class CaptureActivity : AppCompatActivity() {
+class CaptureActivity : BaseActivity() {
 
     companion object {
         private const val TAG = "CaptureActivity"

@@ -12,7 +12,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +34,7 @@ import com.nlc.gesturesnap.helper.PermissionHelper
 import com.nlc.gesturesnap.listener.PhotoDeleteListener
 import com.nlc.gesturesnap.model.SelectablePhoto
 import com.nlc.gesturesnap.ui.component.PhotoDeletionDialog
+import com.nlc.gesturesnap.ui.core.BaseActivity
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.BottomBar
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.Header
 import com.nlc.gesturesnap.ui.screen.gallery.ingredient.PhotoDisplayFragmentView
@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 
-class GalleryActivity : AppCompatActivity(), PhotoDeleteListener {
+class GalleryActivity : BaseActivity(), PhotoDeleteListener {
 
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
 
