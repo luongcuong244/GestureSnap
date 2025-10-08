@@ -1,4 +1,4 @@
-package com.nlc.gesturesnap
+package com.gesturesnap.ai.camera
 
 import org.junit.Test
 

@@ -4,32 +4,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <import type="android.view.View"/>
-        <import type="com.nlc.gesturesnap.R"/>
-        <import type="com.nlc.gesturesnap.model.enums.GestureCategory"/>
+        <import type="com.gesturesnap.ai.camera.R"/>
+        <import type="com.gesturesnap.ai.camera.model.enums.GestureCategory"/>
         <import type="androidx.camera.core.AspectRatio"/>
-        <import type="com.nlc.gesturesnap.model.enums.CameraOption"/>
-        <import type="com.nlc.gesturesnap.model.enums.TimerOption"/>
+        <import type="com.gesturesnap.ai.camera.model.enums.CameraOption"/>
+        <import type="com.gesturesnap.ai.camera.model.enums.TimerOption"/>
         <variable
             name="captureActivity"
-            type="com.nlc.gesturesnap.ui.screen.capture.CaptureActivity" />
+            type="com.gesturesnap.ai.camera.ui.screen.capture.CaptureActivity" />
         <variable
             name="gestureDetectViewModel"
-            type="com.nlc.gesturesnap.view_model.capture.GestureDetectViewModel" />
+            type="com.gesturesnap.ai.camera.view_model.capture.GestureDetectViewModel" />
         <variable
             name="timerViewModel"
-            type="com.nlc.gesturesnap.view_model.capture.TimerViewModel" />
+            type="com.gesturesnap.ai.camera.view_model.capture.TimerViewModel" />
         <variable
             name="cameraModeViewModel"
-            type="com.nlc.gesturesnap.view_model.capture.CameraModeViewModel" />
+            type="com.gesturesnap.ai.camera.view_model.capture.CameraModeViewModel" />
         <variable
             name="cameraFragment"
-            type="com.nlc.gesturesnap.ui.screen.capture.view.CameraFragment" />
+            type="com.gesturesnap.ai.camera.ui.screen.capture.view.CameraFragment" />
         <variable
             name="permissionViewModel"
-            type="com.nlc.gesturesnap.view_model.capture.PermissionViewModel" />
+            type="com.gesturesnap.ai.camera.view_model.capture.PermissionViewModel" />
         <variable
             name="screenRotation"
-            type="com.nlc.gesturesnap.helper.OrientationLiveData" />
+            type="com.gesturesnap.ai.camera.helper.OrientationLiveData" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

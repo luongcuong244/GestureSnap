@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace 'com.nlc.gesturesnap'
+    namespace 'com.gesturesnap.ai.camera'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.nlc.gesturesnap"
+        applicationId "com.gesturesnap.ai.camera"
         minSdk 24
         targetSdk 35
         versionCode 100
@@ -23,7 +23,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
