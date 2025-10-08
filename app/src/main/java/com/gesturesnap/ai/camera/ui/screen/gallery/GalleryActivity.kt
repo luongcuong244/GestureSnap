@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
@@ -257,7 +258,20 @@ fun GalleryActivityComposeScreen(
                     modifier = Modifier
                         .weight(1f)
                 ) {
-                    PhotosList(bottomBarTranslationValue)
+                    if (galleryViewModel.photos.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = androidx.compose.ui.Alignment.Center
+                        ) {
+                            androidx.compose.material3.Text(
+                                text = stringResource(R.string.no_photos),
+                                color = Color.Gray,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    } else {
+                        PhotosList(bottomBarTranslationValue)
+                    }
                     BottomBar(activityActions, bottomBarTranslationValue)
                 }
             }
