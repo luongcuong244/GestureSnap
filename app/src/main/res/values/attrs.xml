@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="GradientStrokeTextView">
+        <!-- stroke -->
+        <attr name="strokeWidth" format="dimension"/>
+        <!-- gradient colors -->
+        <attr name="startColor" format="color"/>
+        <attr name="centerColor" format="color"/>
+        <attr name="endColor" format="color"/>
+        <!-- glow -->
+        <attr name="glowColor" format="color"/>
+        <attr name="glowRadius" format="dimension"/>
+    </declare-styleable>
+
+    <declare-styleable name="RectangleRelativeLayout">
+        <attr name="rectAspectRatio" format="float"/>
+        <attr name="dependOnDimension" format="enum">
+            <enum name="width" value="0"/>
+            <enum name="height" value="1"/>
+        </attr>
+    </declare-styleable>
+</resources>

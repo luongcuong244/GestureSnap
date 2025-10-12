@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/app_background"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/_13sdp"
+    android:paddingTop="@dimen/_20sdp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_30sdp"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            app:cardBackgroundColor="#2A2E38"
+            app:cardCornerRadius="@dimen/_4sdp"
+            app:cardElevation="0dp"
+            app:strokeColor="#6FE7E7"
+            app:strokeWidth="1dp">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/img_logo" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:fontFamily="@font/fugazone_regular"
+            android:text="@string/app_name"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_20ssp" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_capture"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_100sdp"
+        android:layout_marginTop="@dimen/_30sdp"
+        android:background="@drawable/bg_home_btn_capture"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_30sdp"
+            android:src="@drawable/ic_camera" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_7sdp"
+            android:fontFamily="@font/poppins_medium"
+            android:text="@string/take_a_photo"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_13ssp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_13sdp"
+        android:orientation="horizontal">
+
+        <com.gesturesnap.ai.camera.ui.customview.RectangleRelativeLayout
+            android:id="@+id/rl_my_photo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_home_btn_my_photo"
+            app:rectAspectRatio="1.3">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="@dimen/_30sdp"
+                    android:layout_height="@dimen/_30sdp"
+                    android:src="@drawable/ic_gallery" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="@string/my_photo"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_13ssp" />
+
+            </LinearLayout>
+
+        </com.gesturesnap.ai.camera.ui.customview.RectangleRelativeLayout>
+
+        <com.gesturesnap.ai.camera.ui.customview.RectangleRelativeLayout
+            android:id="@+id/rl_setting"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_13sdp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_home_btn_setting"
+            app:rectAspectRatio="1.3">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="@dimen/_30sdp"
+                    android:layout_height="@dimen/_30sdp"
+                    android:src="@drawable/ic_setting" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="@string/setting"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_13ssp" />
+
+            </LinearLayout>
+
+        </com.gesturesnap.ai.camera.ui.customview.RectangleRelativeLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

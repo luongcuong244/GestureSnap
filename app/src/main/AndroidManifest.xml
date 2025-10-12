@@ -33,15 +33,22 @@
         android:usesCleartextTraffic="true">
 
         <activity
-            android:name=".ui.screen.capture.CaptureActivity"
+            android:name=".ui.screen.splash.SplashActivity"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.screen.home.HomeActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.screen.capture.CaptureActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.screen.gallery.GalleryActivity"
             android:exported="false"
