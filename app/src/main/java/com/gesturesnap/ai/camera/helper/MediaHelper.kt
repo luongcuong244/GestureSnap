@@ -4,9 +4,11 @@ import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 import android.util.Size
 import androidx.core.database.getIntOrNull
 import com.gesturesnap.ai.camera.model.PhotoInfo
@@ -116,11 +118,11 @@ object MediaHelper {
             photos.add(
                 PhotoInfo(
                     path = photoPath,
-                    uri = photoUri,
                     name = file.name,
                     size = file.length(),
-                    dateTaken = Date(if (dateTaken > 0) dateTaken else file.lastModified()),
-                    resolution = Size(width, height)
+                    dateTaken = if (dateTaken > 0) dateTaken else file.lastModified(),
+                    width = width,
+                    height = height,
                 )
             )
 
@@ -130,5 +132,54 @@ object MediaHelper {
 
         cursor.close()
         photos
+    }
+
+    fun getUriFromPath(context: Context, path: String): Uri? {
+        if (path.isEmpty()) return null
+
+        val file = File(path)
+        if (!file.exists()) return null
+
+        // Đối với Android 10 (API 29) trở lên: tìm trong MediaStore để lấy content:// URI
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val projection = arrayOf(MediaStore.Images.Media._ID)
+            val selection = "${MediaStore.Images.Media.DATA}=?"
+            val selectionArgs = arrayOf(path)
+
+            context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID))
+                    return ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
+                }
+            }
+
+            // Nếu không tìm thấy trong MediaStore (ảnh mới hoặc chưa scan)
+            // -> thêm vào MediaStore rồi trả về Uri mới
+            val values = ContentValues().apply {
+                put(MediaStore.Images.Media.DATA, path)
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            }
+
+            return context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+        }
+
+        // Dưới Android 10, vẫn có thể dùng Uri.fromFile()
+        return Uri.fromFile(file)
+    }
+
+    fun scanFile(context: Context, path: String) {
+        MediaScannerConnection.scanFile(
+            context,
+            arrayOf(path),
+            null
+        ) { filePath, _ ->
+            Log.i("TAG", "Finished scanning $filePath")
+        }
     }
 }

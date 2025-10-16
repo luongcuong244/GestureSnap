@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,16 +32,16 @@ import com.gesturesnap.ai.camera.helper.AppConstant
 import com.gesturesnap.ai.camera.helper.MediaHelper
 import com.gesturesnap.ai.camera.helper.PermissionHelper
 import com.gesturesnap.ai.camera.listener.PhotoDeleteListener
+import com.gesturesnap.ai.camera.model.PhotoInfo
 import com.gesturesnap.ai.camera.model.SelectablePhoto
 import com.gesturesnap.ai.camera.ui.component.PhotoDeletionDialog
+import com.gesturesnap.ai.camera.ui.core.ActivityHavingDeleteMediaFeature
 import com.gesturesnap.ai.camera.ui.core.BaseActivity
 import com.gesturesnap.ai.camera.ui.screen.gallery.ingredient.BottomBar
 import com.gesturesnap.ai.camera.ui.screen.gallery.ingredient.Header
-import com.gesturesnap.ai.camera.ui.screen.gallery.ingredient.PhotoDisplayFragmentView
 import com.gesturesnap.ai.camera.ui.screen.gallery.ingredient.PhotosList
-import com.gesturesnap.ai.camera.ui.screen.photo_display.PhotoDisplayFragment
+import com.gesturesnap.ai.camera.ui.screen.photo_display.PhotoDisplayActivity
 import com.gesturesnap.ai.camera.view_model.gallery.GalleryViewModel
-import com.gesturesnap.ai.camera.view_model.shared.PhotoDisplayFragmentStateViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -69,33 +68,20 @@ class GalleryActivity : BaseActivity(), PhotoDeleteListener {
             val allPhotos = MediaHelper.getAllPhotos(this@GalleryActivity).map {
                 SelectablePhoto(
                     path = it.path,
-                    uri = it.uri,
                     name = it.name,
                     size = it.size,
                     dateTaken = it.dateTaken,
-                    resolution = it.resolution
+                    width = it.width,
+                    height = it.height
                 )
             }
 
             galleryViewModel.setPhotos(allPhotos)
         }
 
-        val photoDisplayFragmentStateViewModel =
-            ViewModelProvider(this@GalleryActivity)[PhotoDisplayFragmentStateViewModel::class.java]
-
-        photoDisplayFragmentStateViewModel.photoDisplayFragmentState.observe(this) {
-            if (it == PhotoDisplayFragmentStateViewModel.State.PREPARE_CLOSE) {
-                galleryViewModel.setFragmentArgument(PhotoDisplayFragment.Argument())
-            }
-
-            if (it == PhotoDisplayFragmentStateViewModel.State.CLOSED) {
-                galleryViewModel.setIsPhotoDisplayFragmentViewVisible(false)
-            }
-        }
-
         setContent {
             MaterialTheme {
-                GalleryActivityComposeScreen(actions, supportFragmentManager)
+                GalleryActivityComposeScreen(actions)
             }
         }
 
@@ -128,7 +114,10 @@ class GalleryActivity : BaseActivity(), PhotoDeleteListener {
         }
 
         @RequiresApi(Build.VERSION_CODES.R)
-        fun deletePhotosWithApi30orLater(photoUris: List<Uri>) {
+        fun deletePhotosWithApi30orLater(photoPaths: List<String>) {
+            val photoUris = photoPaths.map {
+                MediaHelper.getUriFromPath(this@GalleryActivity, it)
+            }
             val intentSender =
                 MediaStore.createDeleteRequest(contentResolver, photoUris).intentSender
             intentSender.let { sender ->
@@ -138,11 +127,11 @@ class GalleryActivity : BaseActivity(), PhotoDeleteListener {
             }
         }
 
-        fun deletePhotoWithApi29(photoUri: Uri) {
+        fun deletePhotoWithApi29(photoPath: String) {
             if (Build.VERSION.SDK_INT != Build.VERSION_CODES.Q) {
                 return
             }
-
+            val photoUri = MediaHelper.getUriFromPath(this@GalleryActivity, photoPath) ?: return
             try {
                 contentResolver.delete(photoUri, null, null)
                 updateAfterDeletingPhotosSuccessfully()
@@ -159,9 +148,12 @@ class GalleryActivity : BaseActivity(), PhotoDeleteListener {
             }
         }
 
-        fun deletePhotosWithApi28orOlder(photoUris: List<Uri>) {
+        fun deletePhotosWithApi28orOlder(photoPaths: List<String>) {
 
             CoroutineScope(Dispatchers.IO).launch {
+                val photoUris = photoPaths.map {
+                    MediaHelper.getUriFromPath(this@GalleryActivity, it)
+                }
 
                 var hasWriteExternalPermission = true
 
@@ -177,18 +169,19 @@ class GalleryActivity : BaseActivity(), PhotoDeleteListener {
 
                 if (hasWriteExternalPermission) {
                     photoUris.forEach {
-                        contentResolver.delete(it, null, null)
+                        it?.let { url -> contentResolver.delete(url, null, null) }
                     }
                     updateAfterDeletingPhotosSuccessfully()
                 }
             }
         }
+
+        fun goToDisplayScreen(photoInfo: PhotoInfo) {
+            PhotoDisplayActivity.start(this@GalleryActivity, photoInfo)
+        }
     }
 
     private fun updateAfterDeletingPhotosSuccessfully() {
-
-        closePhotoDisplayFragment()
-
         val galleryViewModel =
             ViewModelProvider(this@GalleryActivity)[GalleryViewModel::class.java]
 
@@ -200,39 +193,23 @@ class GalleryActivity : BaseActivity(), PhotoDeleteListener {
         galleryViewModel.setIsSelectable(false)
     }
 
-    private fun closePhotoDisplayFragment() {
-        val galleryViewModel =
-            ViewModelProvider(this@GalleryActivity)[GalleryViewModel::class.java]
-
-        val fragmentManager = supportFragmentManager
-        val fragments = fragmentManager.fragments
-
-        fragments.forEach {
-            if (it is PhotoDisplayFragment) {
-                it.closeFragment()
-                galleryViewModel.setFragmentArgument(PhotoDisplayFragment.Argument())
-            }
-        }
-    }
-
     @RequiresApi(Build.VERSION_CODES.R)
-    override fun deletePhotosWithApi30orLater(photoUri: Uri) {
-        actions.deletePhotosWithApi30orLater(listOf(photoUri))
+    override fun deletePhotosWithApi30orLater(photoPath: String) {
+        actions.deletePhotosWithApi30orLater(listOf(photoPath))
     }
 
-    override fun deletePhotoWithApi29(photoUri: Uri) {
-        actions.deletePhotoWithApi29(photoUri)
+    override fun deletePhotoWithApi29(photoPath: String) {
+        actions.deletePhotoWithApi29(photoPath)
     }
 
-    override fun deletePhotosWithApi28orOlder(photoUri: Uri) {
-        actions.deletePhotosWithApi28orOlder(listOf(photoUri))
+    override fun deletePhotosWithApi28orOlder(photoPath: String) {
+        actions.deletePhotosWithApi28orOlder(listOf(photoPath))
     }
 }
 
 @Composable
 fun GalleryActivityComposeScreen(
     activityActions: GalleryActivity.Actions,
-    fragmentManager: FragmentManager,
     galleryViewModel: GalleryViewModel = viewModel()
 ) {
 
@@ -270,7 +247,7 @@ fun GalleryActivityComposeScreen(
                             )
                         }
                     } else {
-                        PhotosList(bottomBarTranslationValue)
+                        PhotosList(activityActions, bottomBarTranslationValue)
                     }
                     BottomBar(activityActions, bottomBarTranslationValue)
                 }
@@ -287,15 +264,13 @@ fun GalleryActivityComposeScreen(
                                 galleryViewModel.photos.filter {
                                     it.isSelecting
                                 }.map {
-                                    it.uri
+                                    it.path
                                 }
                             )
                         }
                     }
                 )
             }
-
-            PhotoDisplayFragmentView(fragmentManager)
         }
     }
 }

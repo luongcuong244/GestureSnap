@@ -1,15 +1,12 @@
 package com.gesturesnap.ai.camera.model
 
-import android.net.Uri
-import android.util.Size
 import java.io.Serializable
-import java.util.Date
 
 open class PhotoInfo(
     open val path: String = "",
-    open val uri: Uri = Uri.EMPTY,
     open val name: String = "",
-    open val dateTaken: Date = Date(0),
+    open val dateTaken: Long = 0L,
     open val size: Long = 0,
-    open val resolution: Size = Size(0, 0)
-)
+    open val width: Int = 0,
+    open val height: Int = 0,
+) : Serializable

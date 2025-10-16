@@ -1,22 +1,18 @@
 package com.gesturesnap.ai.camera.model
 
-import android.net.Uri
-import android.util.Size
-import java.util.Date
-
 data class SelectablePhoto(
     override val path: String,
-    override val uri: Uri,
     override val name: String,
-    override val dateTaken: Date,
+    override val dateTaken: Long,
     override val size: Long,
-    override val resolution: Size,
+    override val width: Int = 0,
+    override val height: Int = 0,
     var isSelecting: Boolean = false
 ) : PhotoInfo(
     path = path,
-    uri = uri,
     name = name,
     dateTaken = dateTaken,
     size = size,
-    resolution = resolution
+    width = width,
+    height = height,
 )

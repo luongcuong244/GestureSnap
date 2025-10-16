@@ -1,5 +1,6 @@
 package com.gesturesnap.ai.camera.ui.screen.photo_display.ingredient
 
+import android.app.Activity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.height
@@ -8,20 +9,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gesturesnap.ai.camera.R
 import com.gesturesnap.ai.camera.ui.component.TouchableOpacityButton
-import com.gesturesnap.ai.camera.view_model.photo_display.PhotoDisplayViewModel
 
 @Composable
-fun BoxScope.BackButton(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
+fun BoxScope.BackButton() {
+    val context = LocalContext.current
+
     TouchableOpacityButton(
         modifier = Modifier.align(Alignment.CenterStart),
         onClick = {
-            photoDisplayViewModel.setIsFragmentOpen(false)
+            (context as? Activity)?.finish()
         }
     ) {
         Image(

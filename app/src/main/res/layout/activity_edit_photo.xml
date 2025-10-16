@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="#101010">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:background="#000" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp">
+
+            <!-- Phơi sáng -->
+            <TextView
+                android:id="@+id/labelExposure"
+                android:text="Phơi sáng"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <SeekBar
+                android:id="@+id/seekExposure"
+                android:max="200"
+                android:progress="100"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <!-- Độ chói -->
+            <TextView
+                android:text="Độ chói"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <SeekBar
+                android:id="@+id/seekBrightness"
+                android:max="200"
+                android:progress="100"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <!-- Vùng sáng -->
+            <TextView
+                android:text="Vùng sáng"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <SeekBar
+                android:id="@+id/seekHighlights"
+                android:max="200"
+                android:progress="100"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <!-- Vùng tối -->
+            <TextView
+                android:text="Vùng tối"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <SeekBar
+                android:id="@+id/seekShadows"
+                android:max="200"
+                android:progress="100"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <!-- Tương phản -->
+            <TextView
+                android:text="Tương phản"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <SeekBar
+                android:id="@+id/seekContrast"
+                android:max="200"
+                android:progress="100"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <!-- Độ bão hòa -->
+            <TextView
+                android:text="Độ bão hòa"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <SeekBar
+                android:id="@+id/seekSaturation"
+                android:max="200"
+                android:progress="100"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <!-- Độ tươi -->
+            <TextView
+                android:text="Độ tươi"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <SeekBar
+                android:id="@+id/seekVibrance"
+                android:max="200"
+                android:progress="100"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <!-- Độ ấm -->
+            <TextView
+                android:text="Độ ấm"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <SeekBar
+                android:id="@+id/seekWarmth"
+                android:max="200"
+                android:progress="100"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <!-- Tông màu -->
+            <TextView
+                android:text="Tông màu"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <SeekBar
+                android:id="@+id/seekHue"
+                android:max="360"
+                android:progress="180"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

@@ -60,4 +60,5 @@
     <string name="take_a_photo">Take a photo</string>
     <string name="my_photo">My photo</string>
     <string name="setting">Setting</string>
+    <string name="delete_media_failed">Delete media failed</string>
 </resources>

@@ -63,7 +63,7 @@ fun PhotoDetailDialog(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()
 
     LaunchedEffect(Unit){
 
-        val photoInfo = photoDisplayViewModel.fragmentArgument.value.photo
+        val photoInfo = photoDisplayViewModel.photoInfo.value
 
         val dateFormatter = SimpleDateFormat("yyyy/MM/dd  HH:mm:ss", Locale.getDefault())
 
@@ -82,7 +82,7 @@ fun PhotoDetailDialog(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()
         items.add(
             ItemInfo(
                 title = context.getString(R.string.resolution),
-                value = "${photoInfo.resolution.width} x ${photoInfo.resolution.height}"
+                value = "${photoInfo.width} x ${photoInfo.height}"
             )
         )
         items.add(

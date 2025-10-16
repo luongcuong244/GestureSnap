@@ -87,7 +87,7 @@ fun BoxScope.DeleteButton(activityActions: GalleryActivity.Actions, galleryViewM
                 galleryViewModel.photos.filter {
                     it.isSelecting
                 }.map {
-                    it.uri
+                    it.path
                 }
             )
         } else {

@@ -37,7 +37,7 @@ fun DateText(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
     }
 
     val dateString = remember {
-        val dateTaken = photoDisplayViewModel.fragmentArgument.value.photo.dateTaken
+        val dateTaken = photoDisplayViewModel.photoInfo.value.dateTaken
         formatter.format(dateTaken)
     }
 
@@ -57,7 +57,7 @@ fun TimeText(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
     }
 
     val timeString = remember {
-        val dateTaken = photoDisplayViewModel.fragmentArgument.value.photo.dateTaken
+        val dateTaken = photoDisplayViewModel.photoInfo.value.dateTaken
         formatter.format(dateTaken)
     }
 

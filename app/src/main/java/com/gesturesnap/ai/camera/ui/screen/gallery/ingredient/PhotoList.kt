@@ -20,13 +20,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -44,18 +42,17 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.gesturesnap.ai.camera.R
 import com.gesturesnap.ai.camera.helper.AppConstant
-import com.gesturesnap.ai.camera.model.PhotoInfo
 import com.gesturesnap.ai.camera.model.SelectablePhoto
-import com.gesturesnap.ai.camera.ui.screen.photo_display.PhotoDisplayFragment
+import com.gesturesnap.ai.camera.ui.screen.gallery.GalleryActivity
 import com.gesturesnap.ai.camera.view_model.gallery.GalleryViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.io.File
 
 @Composable
-fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()) {
+fun PhotosList(
+    activityActions: GalleryActivity.Actions,
+    offsetValue: Dp,
+    galleryViewModel: GalleryViewModel = viewModel()
+) {
 
     val gridState = rememberLazyGridState()
     val lastPhotoCount = remember { mutableIntStateOf(0) }
@@ -81,6 +78,7 @@ fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()
     ) {
         items(galleryViewModel.photos.size) { index ->
             PhotoItem(
+                activityActions,
                 gridState,
                 index,
                 photo = galleryViewModel.photos[index]
@@ -91,6 +89,7 @@ fun PhotosList(offsetValue: Dp, galleryViewModel: GalleryViewModel = viewModel()
 
 @Composable
 fun PhotoItem(
+    activityActions: GalleryActivity.Actions,
     gridState: LazyGridState,
     index: Int,
     photo: SelectablePhoto,
@@ -111,20 +110,7 @@ fun PhotoItem(
             photo.isSelecting = !photo.isSelecting
             isSelectingState.value = photo.isSelecting // refresh UI
         } else {
-            CoroutineScope(Dispatchers.Main).launch {
-                val isFullyVisibleItem = isFullyVisibleItem(gridState, index)
-                if (!isFullyVisibleItem) {
-                    gridState.scrollToItem(index)
-                }
-                galleryViewModel.setFragmentArgument(
-                    PhotoDisplayFragment.Argument(
-                        sizePhotoItem.value,
-                        positionInRootPhotoItem.value,
-                        photo as PhotoInfo
-                    )
-                )
-                galleryViewModel.setIsPhotoDisplayFragmentViewVisible(true)
-            }
+            activityActions.goToDisplayScreen(photo)
         }
     }
 
@@ -134,26 +120,9 @@ fun PhotoItem(
         }
     }
 
-    val alpha = remember {
-        mutableFloatStateOf(1f)
-    }
-
-    LaunchedEffect(galleryViewModel.fragmentArgument.value) {
-
-        val path = galleryViewModel.fragmentArgument.value.photo.path
-
-        if (path == photo.path) {
-            delay(100) // for fragment initialization
-            alpha.value = 0f
-        } else {
-            alpha.value = 1f
-        }
-    }
-
     Box(
         modifier = Modifier
             .aspectRatio(1f)
-            .alpha(alpha.value)
     ) {
         Button(
             onClick = onClick,
