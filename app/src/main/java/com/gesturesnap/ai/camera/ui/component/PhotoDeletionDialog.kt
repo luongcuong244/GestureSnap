@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -24,104 +24,104 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.gesturesnap.ai.camera.R
 import com.gesturesnap.ai.camera.helper.AppConstant
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @Composable
 fun PhotoDeletionDialog(
     onCancel: () -> Unit,
     onDelete: () -> Unit
-){
-
-    val backgroundColor = colorResource(R.color.black_500)
+) {
+    val backgroundColor = colorResource(R.color.black_700)
     val defaultSystemBarsColor = colorResource(R.color.gray_white)
-
     val systemUiController = rememberSystemUiController()
 
-    DisposableEffect(Unit){
-
+    DisposableEffect(Unit) {
         systemUiController.setSystemBarsColor(backgroundColor)
-
-        onDispose {
-            systemUiController.setSystemBarsColor(defaultSystemBarsColor)
-        }
+        onDispose { systemUiController.setSystemBarsColor(defaultSystemBarsColor) }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor)
-            .clickable {
-                onCancel()
-            }
-    ){
+            .clickable { onCancel() }
+    ) {
         Column(
             modifier = Modifier
-                .padding(20.dp, 0.dp)
+                .padding(horizontal = 24.dp)
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .align(Alignment.Center)
-                .clip(RoundedCornerShape(5))
+                .clip(RoundedCornerShape(16.dp))
                 .background(colorResource(R.color.white))
-                .clickable { } // prevent clicking through the dialog
-                .padding(15.dp)
+                .clickable(enabled = false) { } // chặn click xuyên qua
+                .padding(vertical = 28.dp, horizontal = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally, // căn giữa text và nút
+            verticalArrangement = Arrangement.Center
         ) {
+            // Tiêu đề
             Text(
                 text = stringResource(R.string.photo_deletion_dialog_title),
                 fontFamily = FontFamily(Font(R.font.poppins_semibold)),
                 fontSize = AppConstant.TITLE_FONT_SIZE,
+                color = colorResource(R.color.navi_blue),
+                modifier = Modifier
+                    .padding(bottom = 12.dp)
+                    .align(Alignment.CenterHorizontally)
             )
-            Divider(
-                thickness = 0.5.dp,
-                modifier = Modifier.padding(0.dp, 5.dp)
+
+            // Nội dung mô tả
+            Text(
+                text = stringResource(R.string.photo_deletion_dialog_text_content),
+                fontFamily = FontFamily(Font(R.font.poppins_regular)),
+                fontSize = AppConstant.SMALL_FONT_SIZE,
+                color = colorResource(R.color.black),
+                modifier = Modifier
+                    .padding(bottom = 24.dp)
+                    .align(Alignment.CenterHorizontally),
             )
-            Text(text = stringResource(R.string.photo_deletion_dialog_text_content))
-            Divider(
-                thickness = 0.5.dp,
-                modifier = Modifier.padding(0.dp, 15.dp)
-            )
+
+            // Hàng nút
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp, 0.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
             ) {
+                // Nút Cancel
                 TouchableOpacityButton(
                     onClick = { onCancel() },
                     modifier = Modifier
-                        .wrapContentSize()
-                        .clip(RoundedCornerShape(10))
+                        .weight(1f)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(colorResource(R.color.gray_2))
-                        .padding(15.dp, 3.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.cancel),
                         fontFamily = FontFamily(Font(R.font.poppins_regular)),
                         fontSize = AppConstant.TEXT_BUTTON_FONT_SIZE,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(top = 3.dp),
+                        modifier = Modifier.align(Alignment.Center),
+                        color = colorResource(R.color.black)
                     )
                 }
 
+                // Nút Delete
                 TouchableOpacityButton(
-                    onClick = {
-                        onDelete()
-                    },
+                    onClick = { onDelete() },
                     modifier = Modifier
-                        .wrapContentSize()
-                        .clip(RoundedCornerShape(10))
+                        .weight(1f)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(colorResource(R.color.red))
-                        .padding(15.dp, 3.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.delete),
                         fontFamily = FontFamily(Font(R.font.poppins_regular)),
                         fontSize = AppConstant.TEXT_BUTTON_FONT_SIZE,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(top = 3.dp),
+                        modifier = Modifier.align(Alignment.Center),
                         color = colorResource(R.color.white)
                     )
                 }

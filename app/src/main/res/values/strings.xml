@@ -41,7 +41,7 @@
     <string name="camera">Camera</string>
 
     <string name="photo_deletion_dialog_title">Confirm Delete</string>
-    <string name="photo_deletion_dialog_text_content">The photos will be completely deleted from the device. Are you sure you want to delete it?</string>
+    <string name="photo_deletion_dialog_text_content">Are you sure you want to delete it?</string>
 
     <string name="no_camera_available_warning">No camera is available now</string>
     <string name="no_camera_available_detailed_description">Please ensure that your device\'s cameras are functioning properly</string>

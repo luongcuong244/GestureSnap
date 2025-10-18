@@ -2,7 +2,6 @@ package com.gesturesnap.ai.camera.ui.screen.gallery
 
 import android.Manifest
 import android.app.RecoverableSecurityException
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.ConditionVariable
@@ -35,7 +34,6 @@ import com.gesturesnap.ai.camera.listener.PhotoDeleteListener
 import com.gesturesnap.ai.camera.model.PhotoInfo
 import com.gesturesnap.ai.camera.model.SelectablePhoto
 import com.gesturesnap.ai.camera.ui.component.PhotoDeletionDialog
-import com.gesturesnap.ai.camera.ui.core.ActivityHavingDeleteMediaFeature
 import com.gesturesnap.ai.camera.ui.core.BaseActivity
 import com.gesturesnap.ai.camera.ui.screen.gallery.ingredient.BottomBar
 import com.gesturesnap.ai.camera.ui.screen.gallery.ingredient.Header
@@ -57,6 +55,13 @@ class GalleryActivity : BaseActivity(), PhotoDeleteListener {
     private val condVarWaitState = ConditionVariable()
 
     private val actions = Actions()
+
+    private val photoDetailsLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                updateAfterDeletingPhotosSuccessfully()
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -177,7 +182,7 @@ class GalleryActivity : BaseActivity(), PhotoDeleteListener {
         }
 
         fun goToDisplayScreen(photoInfo: PhotoInfo) {
-            PhotoDisplayActivity.start(this@GalleryActivity, photoInfo)
+            PhotoDisplayActivity.start(photoDetailsLauncher, this@GalleryActivity, photoInfo)
         }
     }
 
@@ -259,7 +264,16 @@ fun GalleryActivityComposeScreen(
                         galleryViewModel.setIsPhotoDeletionDialogVisible(false)
                     },
                     onDelete = {
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                        galleryViewModel.setIsPhotoDeletionDialogVisible(false)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            activityActions.deletePhotosWithApi30orLater(
+                                galleryViewModel.photos.filter {
+                                    it.isSelecting
+                                }.map {
+                                    it.path
+                                }
+                            )
+                        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                             activityActions.deletePhotosWithApi28orOlder(
                                 galleryViewModel.photos.filter {
                                     it.isSelecting

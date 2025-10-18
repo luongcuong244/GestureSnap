@@ -7,8 +7,6 @@ import com.gesturesnap.ai.camera.model.PhotoInfo
 
 class PhotoDisplayViewModel : ViewModel() {
 
-    var photoDeleteListener: PhotoDeleteListener? = null
-
     var photoInfo = mutableStateOf(PhotoInfo())
 
     val isPhotoDeletionDialogVisible = mutableStateOf(false)

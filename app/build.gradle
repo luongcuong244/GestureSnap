@@ -116,4 +116,6 @@ dependencies {
     // sdp
     implementation "com.intuit.sdp:sdp-android:1.1.1"
     implementation "com.intuit.ssp:ssp-android:1.1.1"
+
+    implementation 'com.github.eincs:android-gpuimage:v1.4.1-eincs-1.0.1'
 }

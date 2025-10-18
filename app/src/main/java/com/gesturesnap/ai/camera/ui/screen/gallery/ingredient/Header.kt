@@ -14,6 +14,9 @@ import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
@@ -31,9 +34,18 @@ fun Header(activityActions: GalleryActivity.Actions){
         modifier = Modifier
             .fillMaxWidth()
             .height(AppConstant.APP_BAR_HEIGHT)
-            .background(color = colorResource(R.color.gray_white))
+            .background(color = colorResource(R.color.color_181A19))
             .pointerInput(Unit) {}
-            .padding(15.dp, 5.dp)
+            .drawBehind {
+                val strokeWidth = 2f
+                drawLine(
+                    Color.DarkGray,
+                    Offset(0f, size.height),
+                    Offset(size.width, size.height),
+                    strokeWidth
+                )
+            }
+            .padding(16.dp, 5.dp)
             .zIndex(1f)
     ){
         Row(
@@ -43,15 +55,8 @@ fun Header(activityActions: GalleryActivity.Actions){
             verticalAlignment = Alignment.CenterVertically
         ) {
             BackButton(activityActions)
-            Divider(
-                color = colorResource(R.color.black_300),
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(15.dp, 5.dp)
-                    .width(0.75.dp)
-            )
-            PhotoNumberText()
         }
+        PhotoNumberText()
         if(!hideChoiceButton){
             ChoiceButton()
         }

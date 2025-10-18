@@ -20,7 +20,7 @@ import com.gesturesnap.ai.camera.R
 import com.gesturesnap.ai.camera.helper.AppConstant
 
 @Composable
-fun BoxScope.BottomBar(){
+fun BoxScope.BottomBar() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -30,7 +30,6 @@ fun BoxScope.BottomBar(){
             .pointerInput(Unit) {}
             .drawBehind {
                 val strokeWidth = 2f
-
                 drawLine(
                     Color.LightGray,
                     Offset(0f, 0f),
@@ -43,6 +42,7 @@ fun BoxScope.BottomBar(){
         verticalAlignment = Alignment.CenterVertically
     ) {
         InfoButton()
+        EditButton()
         DeleteButton()
     }
 }

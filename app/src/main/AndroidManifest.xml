@@ -57,6 +57,10 @@
             android:name=".ui.screen.photo_display.PhotoDisplayActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.screen.edit.EditPhotoActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"

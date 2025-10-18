@@ -36,12 +36,12 @@ fun BoxScope.BottomBar(activityActions: GalleryActivity.Actions, translationYVal
             .height(AppConstant.BOTTOM_BAR_HEIGHT)
             .align(Alignment.BottomEnd)
             .offset(0.dp, translationYValue)
-            .background(color = colorResource(R.color.gray_white)) // note the order of background method and padding method
+            .background(color = colorResource(R.color.color_181A19)) // note the order of background method and padding method
             .drawBehind {
                 val strokeWidth = 2f
 
                 drawLine(
-                    Color.LightGray,
+                    Color.DarkGray,
                     Offset(0f, 0f),
                     Offset(size.width, 0f),
                     strokeWidth
@@ -60,10 +60,9 @@ fun BoxScope.SelectedItemsText(galleryViewModel: GalleryViewModel = viewModel())
         text = galleryViewModel.selectedItemsText.value,
         fontFamily = FontFamily(Font(R.font.poppins_semibold)),
         fontSize = AppConstant.REGULAR_FONT_SIZE,
-        color = colorResource(R.color.navi_blue),
+        color = colorResource(R.color.white),
         modifier = Modifier
             .align(Alignment.CenterStart)
-            .padding(top = 3.dp)
     )
 }
 
@@ -73,7 +72,7 @@ fun BoxScope.DeleteButton(activityActions: GalleryActivity.Actions, galleryViewM
     val isEnable = galleryViewModel.selectedItemsCount.value > 0
 
     val iconColor = if(isEnable)
-        colorResource(R.color.blue) else Color.Gray
+        colorResource(R.color.white) else colorResource(R.color.white_300)
 
     SquareIconButton(
         modifier = Modifier
@@ -82,7 +81,7 @@ fun BoxScope.DeleteButton(activityActions: GalleryActivity.Actions, galleryViewM
         iconColor = iconColor,
         isEnable = isEnable
     ) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             activityActions.deletePhotosWithApi30orLater(
                 galleryViewModel.photos.filter {
                     it.isSelecting
@@ -92,6 +91,7 @@ fun BoxScope.DeleteButton(activityActions: GalleryActivity.Actions, galleryViewM
             )
         } else {
             galleryViewModel.setIsPhotoDeletionDialogVisible(true)
-        }
+        }*/
+        galleryViewModel.setIsPhotoDeletionDialogVisible(true)
     }
 }

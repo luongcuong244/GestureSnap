@@ -69,6 +69,7 @@ fun PhotosList(
     LazyVerticalGrid(
         modifier = Modifier
             .fillMaxSize()
+            .background(colorResource(R.color.color_181A19))
             .offset(0.dp, offsetValue - AppConstant.BOTTOM_BAR_HEIGHT),
         columns = GridCells.Fixed(3),
         verticalArrangement = Arrangement.spacedBy(2.dp),

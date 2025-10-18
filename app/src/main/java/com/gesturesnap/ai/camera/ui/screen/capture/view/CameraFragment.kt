@@ -504,12 +504,11 @@ class CameraFragment : Fragment(),
 
                     recentPhotoViewModel.setRecentPhoto(bitmap)
 
-                    // Create time-stamped output file to hold the image
                     val photoName = "IMG_" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis()) + ".jpg"
 
-                    val photoUri = MediaHelper.createPhotoUri(requireContext(), "Pictures", photoName)
+                    // val photoUri = MediaHelper.createPhotoUri(requireContext(), "Pictures", photoName)
 
-                    MediaHelper.savePhoto(requireContext(), bitmap, photoUri)
+                    MediaHelper.saveBitmapToGallery(requireContext(), bitmap, photoName)
 
                     image.close()
                 }

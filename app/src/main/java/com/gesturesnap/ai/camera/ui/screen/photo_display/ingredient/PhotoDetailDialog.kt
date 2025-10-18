@@ -41,7 +41,7 @@ data class ItemInfo(val title: String, val value: String)
 @Composable
 fun PhotoDetailDialog(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()){
 
-    val backgroundColor = colorResource(R.color.black_500)
+    val backgroundColor = colorResource(R.color.black_700)
     val defaultSystemBarsColor = colorResource(R.color.gray_white)
 
     val systemUiController = rememberSystemUiController()
@@ -111,7 +111,7 @@ fun PhotoDetailDialog(photoDisplayViewModel: PhotoDisplayViewModel = viewModel()
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(colorResource(R.color.black_500))
+                .background(colorResource(R.color.black_700))
                 .padding(20.dp)
         ) {
             Column(

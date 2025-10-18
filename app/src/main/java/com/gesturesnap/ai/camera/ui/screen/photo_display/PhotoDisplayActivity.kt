@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -51,10 +52,10 @@ class PhotoDisplayActivity : ActivityHavingDeleteMediaFeature() {
     companion object {
         private const val EXTRA_PHOTO_INFO = "photo_info"
 
-        fun start(context: Context, photoInfo: PhotoInfo) {
+        fun start(launcher:  ActivityResultLauncher<Intent>, context: Context, photoInfo: PhotoInfo) {
             val intent = Intent(context, PhotoDisplayActivity::class.java)
             intent.putExtra(EXTRA_PHOTO_INFO, photoInfo)
-            context.startActivity(intent)
+            launcher.launch(intent)
         }
     }
 }

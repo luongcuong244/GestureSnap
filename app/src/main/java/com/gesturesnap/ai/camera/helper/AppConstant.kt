@@ -5,8 +5,8 @@ import androidx.compose.ui.unit.sp
 
 object AppConstant {
 
-    val APP_BAR_HEIGHT = 50.dp
-    val BOTTOM_BAR_HEIGHT = 50.dp
+    val APP_BAR_HEIGHT = 60.dp
+    val BOTTOM_BAR_HEIGHT = 60.dp
 
     const val GESTURE_OPTION_INDEX_KEY = "gesture_option_index_key"
 

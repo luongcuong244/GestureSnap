@@ -30,8 +30,8 @@ fun BoxScope.BackButton() {
             painter = painterResource(R.drawable.ic_arrow_left),
             contentDescription = "Back",
             modifier = Modifier
-                .height(25.dp)
-                .width(25.dp),
+                .height(24.dp)
+                .width(24.dp),
             colorFilter = ColorFilter.tint(colorResource(R.color.blue))
         )
     }

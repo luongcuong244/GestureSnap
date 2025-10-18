@@ -37,7 +37,7 @@ fun BoxScope.ChoiceButton(galleryViewModel: GalleryViewModel = viewModel()){
             galleryViewModel.setIsSelectable(!isSelectable)
         },
         contentPadding = PaddingValues(10.dp, 0.dp),
-        colors = ButtonDefaults.buttonColors(colorResource(R.color.gray_2)),
+        colors = ButtonDefaults.buttonColors(colorResource(R.color.white_300)),
         modifier = Modifier
             .height(27.dp)
             .align(Alignment.CenterEnd)
@@ -48,7 +48,7 @@ fun BoxScope.ChoiceButton(galleryViewModel: GalleryViewModel = viewModel()){
                 .padding(top = 3.dp),
             fontFamily = FontFamily(Font(R.font.poppins_semibold)),
             fontSize = AppConstant.TEXT_BUTTON_FONT_SIZE,
-            color = colorResource(R.color.blue)
+            color = colorResource(R.color.white)
         )
     }
 }
